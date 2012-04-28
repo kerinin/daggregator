@@ -55,9 +55,6 @@ describe NodesController do
         response.body.should be_json_eql(node)
       end
     end
-
-    context "with missing node" do
-    end
   end
 
   describe "GET /node/<id>/<key>" do
