@@ -1,0 +1,9 @@
+p#notice = notice
+
+p
+  strong Operations:
+  = @flow.operations
+
+= link_to 'Edit', edit_flow_path(@flow)
+'|
+= link_to 'Back', flows_path

@@ -1,0 +1,12 @@
+= form_for @flow do |f|
+  - if @flow.errors.any?
+    #error_explanation
+      h2 = "#{pluralize(@flow.errors.count, "error")} prohibited this flow from being saved:"
+      ul
+        - @flow.errors.full_messages.each do |message|
+          li = message
+
+  .field
+    = f.label :operations
+    = f.text_field :operations
+  .actions = f.submit 'Save'

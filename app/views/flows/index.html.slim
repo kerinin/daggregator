@@ -1,0 +1,19 @@
+h1 Listing flows
+
+table
+  tr
+    th Operations
+    th
+    th
+    th
+
+  - @flows.each do |flow|
+    tr
+      td = flow.operations
+      td = link_to 'Show', flow
+      td = link_to 'Edit', edit_flow_path(flow)
+      td = link_to 'Destroy', flow, :confirm => 'Are you sure?', :method => :delete
+
+br
+
+= link_to 'New Flow', new_flow_path

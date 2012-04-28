@@ -1,4 +1,8 @@
 Daggregator::Application.routes.draw do
+  resources :flows
+
+  resources :nodes
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
