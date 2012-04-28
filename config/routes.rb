@@ -1,7 +1,11 @@
 Daggregator::Application.routes.draw do
   resources :flows
 
-  resources :nodes
+  resources :nodes do
+    member do
+      get 'key/:key', :action => 'key'
+    end
+  end
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

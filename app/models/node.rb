@@ -1,6 +1,14 @@
 class Node < ActiveRecord::Base
   def key(name)
-    data[name.to_s]
+    data_key(name).merge aggregates_key(name)
+  end
+
+  def data_key(name)
+    data.select {|key| key.start_with? name }
+  end
+
+  def aggregates_key(name)
+    aggregates.select {|key| key.start_with? name }
   end
 
   def data=(hash)
@@ -11,7 +19,7 @@ class Node < ActiveRecord::Base
     if data_json.nil?
       {}
     else
-      JSON.parse(data_json)
+      JSON.parse(data_json).stringify_keys!
     end
   end
 

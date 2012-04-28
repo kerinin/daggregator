@@ -21,6 +21,20 @@ class NodesController < ApplicationController
     end
   end
 
+  def key
+    @node = Node.find(params[:id])
+    @key = @node.key(params[:key])
+
+    if @key.empty?
+      raise ActiveRecord::RecordNotFound 
+    end
+
+    respond_to do |format|
+      format.json { render json: @key }
+    end
+  end
+
+
   # GET /nodes/new
   # GET /nodes/new.json
   def new

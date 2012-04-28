@@ -57,7 +57,7 @@ Daggregator provides a RESTful API with the following endpoints:
 
 Returns the node whose id is `<id>`.
 
-### GET `/node/<id>/<key>`
+### GET `/node/<id>/key/<key>`
 
 Returns the value of a data/aggregate key on node. Returns 404 if the
 key isn't defined for the node.

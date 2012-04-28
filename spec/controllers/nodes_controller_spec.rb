@@ -57,17 +57,81 @@ describe NodesController do
     end
   end
 
-  describe "GET /node/<id>/<key>" do
+  describe "GET /node/<id>/key/<key>" do
     context "with existing node & data key" do
-    end
-    
-    context "with existing node & aggregate numeric key" do
-    end
+      before(:each) do
+        @node = Node.new
+        @node.stub(:data).and_return({'data_foo' => 1, 'data_baz.one' => 100, 'data_baz.two' => 200})
+        @node.stub(:aggregates).and_return({'ag_foo' => 1, 'ag_bar' => [10,20,30], 'ag_baz.one' => 100, 'ag_baz.two' => 200})
+        Node.stub(:find).and_return(@node)
+      end
 
-    context "with existing node & aggregate set key" do
+      context "requesting data key" do
+        before(:each) { get :key, id: 1, key: 'data_foo', format: :json }
+
+        it("returns JSON") { response.header['Content-Type'].should include 'application/json' }
+        it("returns 200") { response.status.should == 200 }
+        it "returns expected JSON" do
+          json = %({"data_foo": 1})
+          response.body.should be_json_eql(json)
+        end
+      end
+
+      context "requesting data namespace" do
+        before(:each) { get :key, id: 1, key: 'data_baz', format: :json }
+
+        it("returns JSON") { response.header['Content-Type'].should include 'application/json' }
+        it("returns 200") { response.status.should == 200 }
+        it "returns expected JSON" do
+          json = %({"data_baz.one": 100, "data_baz.two": 200})
+          response.body.should be_json_eql(json)
+        end
+      end
+      
+      context "requesting numeric aggregate key" do
+        before(:each) { get :key, id: 1, key: 'ag_foo', format: :json }
+
+        it("returns JSON") { response.header['Content-Type'].should include 'application/json' }
+        it("returns 200") { response.status.should == 200 }
+        it "returns expected JSON" do
+          json = %({"ag_foo": 1})
+          response.body.should be_json_eql(json)
+        end
+      end
+      
+      context "requesting set aggregate key" do
+        before(:each) { get :key, id: 1, key: 'ag_bar', format: :json }
+
+        it("returns JSON") { response.header['Content-Type'].should include 'application/json' }
+        it("returns 200") { response.status.should == 200 }
+        it "returns expected JSON" do
+          json = %({"ag_bar": [10,20,30]})
+          response.body.should be_json_eql(json)
+        end
+      end
+
+      context "requesting aggregate namespace" do
+        before(:each) { get :key, id: 1, key: 'ag_baz', format: :json }
+
+        it("returns JSON") { response.header['Content-Type'].should include 'application/json' }
+        it("returns 200") { response.status.should == 200 }
+        it "returns expected JSON" do
+          json = %({"ag_baz.one": 100, "ag_baz.two":200})
+          response.body.should be_json_eql(json)
+        end
+      end
     end
 
     context "with existing node, missing key" do
+      before(:each) do
+        @node = Node.new
+        Node.stub(:find).and_return(@node)
+      end
+
+      it "raises RecordNotFound" do
+        pending "not worth fighting"
+        lambda { get :key, id: 1, key: 'does not exist', format: :json}.should raise_error(ActiveRecord::RecordNotFound)
+      end
     end
   end
 
