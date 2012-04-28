@@ -29,4 +29,5 @@ gem 'active_model_serializers'
 
 group :development, :test do
   gem 'rspec-rails'
+  gem 'json_spec'
 end
