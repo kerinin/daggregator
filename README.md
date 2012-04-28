@@ -49,7 +49,7 @@ aggregates a set named `baz[]` you can request the mean, median,
 etc of the set.
 
 
-## Use
+## CRUD API
 
 Daggregator provides a RESTful API with the following endpoints:
 
@@ -126,12 +126,16 @@ the value, only one instance of the value will be removed: `{1,2,2,3} - 2 => {1,
 Likewise, if a request is made to add a value to a set which already contains the value, another
 instance of the value will be added: `{1,2,3} + 2 => {1,2,2,3}`
 
+Returns 500 if any of the operations create an aggregation loop.
+
 Implicitly increments/decrements target nodes.
 
 ### PUT `/flow/<id>/<source key>:<target key>`
 
 Adds an operation using the syntax defined above.  Returns 200 even if the operation already
 exists. Returns 400 if the flow doesn't exist. Implicitly increments/decrements target nodes.
+
+Returns 500 if the operation creates an aggregation loop.
 
 ### DELETE `/flow/<id>/<source key>:<target key>`
 
@@ -145,4 +149,41 @@ Removes a flow.  Implicitly increments/decrements target nodes and removes any
 aggregate keys for which the target has no source operations.
 Returns 400 if the flow doesn't exist.
 
+
+## Query API
+
+Nodes can be queried at the by GET-ting `/node` with a list of parameters.  All nodes
+accept the following parameters:
+
+* `limit=<n>` the maximum number of records to return
+* `offset=<n>` the offset to start at
+
+* `order=<key>:asc` order by key ascending
+* `order=<key>:asc` order by key descending
+* `order=[<key>:asc,<otherkey>:desc]` order by key in ascending order, and by otherkey in descending order if key has the same value
+
+* `sources=<id1>,<id2>` limit to nodes with flows originating from any member of the set
+* `sources=<id1>:<key1>,<id2>:<key2>` same as above, but restricts to flows with operations based on key1 or key2
+* `sources=<id1>:<key1>:<agr1>,<id2>:-<key2>:<agr2>` same as above, but restricts to flows with operations from key1 -> agr1 etc
+
+* `targets=<id1>,<id2>` limit to nodes with flows terminating in any member of the set
+* `targets=<id1>:<key1>,<id2>:<key2>` same as above, but restricts to flows with operations targeting key1 or key2
+* `targets=<id1>:<key1>:<agr1>,<id2>:-<key2>:<agr2>` same as above, but restricts to flows with operations from key1 -> agr1 etc
+
+In addition, queries can specify constraints on the value of keys:
+
+* `<key>=<n>` nodes for which the value of `<key>` equals `<n>`
+* `<key>.ne=<n>` nodes for which the value of `<key>` is not equal to `<n>`
+* `<key>.gt=<n>` nodes for which the value of `<key>` is greater than `<n>`
+* `<key>.lt=<n>` nodes for which the value of `<key>` is less than `<n>`
+
+These can be combined with the keywords `target` and `source` to reestrict the results 
+to nodes whose sources or targets meet certain criteria:
+
+* `targets:<key>=<n>` nodes with flows terminating in targets for which the value of `<key>` is `<n>`
+* `sources:<key>.ne=<n>` nodes with flows originating from sources for which the value of `<key>` is `<n>`
+
+When specifying constraints on related nodes, the constraints are treated as AND operations,
+so for example `targets:foo=1&sources:bar=5` would return nodes with flows terminating in
+targets with `foo=1` _and_ flows originating in sources with `bar=5`.
 
