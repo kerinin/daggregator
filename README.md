@@ -2,9 +2,6 @@
 
 Aggregation for directed acyclic graph structures
 
-* auto-gen TOC:
-{:toc}
-
 ## Introduction
 
 Daggregator uses two objects, `node` and `flow`.  Nodes represent
