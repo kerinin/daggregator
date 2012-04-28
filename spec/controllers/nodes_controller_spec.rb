@@ -39,6 +39,21 @@ describe NodesController do
 
   describe "GET /node/<id>" do
     context "with existing node" do
+      before(:each) do
+        @node = Node.new
+        @node.stub(:data).and_return({data1: 1, data2: 2})
+        @node.stub(:aggregates).and_return({aggregate1: 1, aggregate2: 2})
+        Node.stub(:find).and_return(@node)
+        get :show, id: 'foo', format: :json
+      end
+
+      it("returns JSON") { response.header['Content-Type'].should include 'application/json' }
+      it("returns 200") { response.status.should == 200 }
+
+      it "returns expected JSON" do
+        node = %({"node":{"data":{"data1":1, "data2":2}, "aggregates":{"aggregate1":1, "aggregate2":2}}})
+        response.body.should be_json_eql(node)
+      end
     end
 
     context "with missing node" do
