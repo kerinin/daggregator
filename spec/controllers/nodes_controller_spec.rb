@@ -69,9 +69,6 @@ describe NodesController do
 
     context "with existing node, missing key" do
     end
-
-    context "with missing node" do
-    end
   end
 
   describe "PUT /node/<id>" do
@@ -85,9 +82,6 @@ describe NodesController do
     end
 
     context "with existing node and pre-existing aggregate key" do
-    end
-
-    context "with missing node" do
     end
 
     context "with existing node and junk data" do
@@ -106,9 +100,6 @@ describe NodesController do
 
     context "with existing node and updated aggregate value" do
     end
-
-    context "with missing node" do
-    end
   end
 
   describe "DELETE /node/<id>/<key>" do
@@ -120,16 +111,10 @@ describe NodesController do
 
     context "with existing node and aggregate key" do
     end
-
-    context "with missing node" do
-    end
   end
 
   describe "DELETE /node/<id>" do
     context "with existing node" do
-    end
-
-    context "with missing node" do
     end
   end
 end
