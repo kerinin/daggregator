@@ -2,6 +2,9 @@
 
 Aggregation for directed acyclic graph structures
 
+* auto-gen TOC:
+{:toc}
+
 ## Introduction
 
 Daggregator uses two objects, `node` and `flow`.  Nodes represent
@@ -159,7 +162,7 @@ accept the following parameters:
 * `offset=<n>` the offset to start at
 
 * `order=<key>:asc` order by key ascending
-* `order=<key>:asc` order by key descending
+* `order=<key>:desc` order by key descending
 * `order=[<key>:asc,<otherkey>:desc]` order by key in ascending order, and by otherkey in descending order if key has the same value
 
 * `sources=<id1>,<id2>` limit to nodes with flows originating from any member of the set
