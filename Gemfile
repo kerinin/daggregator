@@ -25,7 +25,7 @@ gem 'jquery-rails'
 gem 'slim-rails'
 # gem 'neoid' # neo4j ORM
 gem 'pg'
-
+gem 'active_model_serializers'
 
 group :development, :test do
   gem 'rspec-rails'
