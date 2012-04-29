@@ -124,16 +124,18 @@ Returns 500 if the key is defined on one of the node's sources.
 
 Returns 404 if the node doesn't exist.
 
-### PUT `/node/<source id>/flow_to/<target id>` 
+### PUT `/node/<source id>/flow_to/<target1 id>+<target2 id>` 
 
-Creates a flow from node `<source id>` to node `<target id>`.  
+Creates a flow from node `<source id>` to nodes `<target1 id>` and
+`<target2 id>`.  
 
 Returns 200 if the flow already exists or was successfully created.
 
-Returns 404 if either of the source node don't exist. Implicitly creates
-the target node if it doesn't exist.
+Returns 404 if the source node don't exist. Implicitly creates
+the target nodes if they doesn't exist.
 
-Returns 500 if the flow would create a loop.
+Returns 500 if the flow would create a loop for any of the targets. In
+this case none of the requested flows will be created.
 
 
 ### DELETE `/node/<id>/key/<key>`
