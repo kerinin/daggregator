@@ -61,25 +61,23 @@ following form:
 
 Returns 404 if the node isn't defined.
 
-### GET `/node/<id>/aggregate/<key>/[SUM|AVG|MAX|MIN|COUNT]`
+### GET `/node/<id>/[sum|count]/<key1>+<key2>`
 
 Returns an aggregate value of `<key>` using one of the functions
-`SUM`, `AVG`, `MAX`, `MIN` or `COUNT`. `COUNT` returns the number
-of source nodes for which `<key>` is defined. Multiple results
-can be returnd by concatenating (ie `/node/foo/aggregate/bar/SUM+AVG`).
+`sum` or `count`. `count` returns the number
+of source nodes for which `<key>` is defined. Results for multiple keys
+can be returnd by concatenating with `+` (ie `/node/foo/sum/bar+baz`).
 
 JSON returned in the following format:
 
 ``` javascript
-// GET /node/foo/aggregate/bar/SUM+AVG
+// GET /node/foo/sum/bar+baz
 {
   'node': {
     'identifier': 'foo',
     'aggregates': {
-      'bar': {
-        'SUM': 3.42,
-        'AVG': 1.1
-      }
+      'bar': { 'SUM': 3.42 },
+      'baz': { 'SUM': 3.24 }
     }
   }
 }

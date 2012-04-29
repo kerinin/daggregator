@@ -2,14 +2,34 @@ require 'spec_helper'
 
 describe Node do
   describe "new" do
-    subject { Node.new( data: { foo: 2, 'bar[]' => ['3',4.1,'5.1',6] } ) }
+    subject { Node.new( identifier: 'unique', data: { foo: 2, 'bar' => '3', baz: 4.1} ) }
 
-    it "sets numeric keys"  do
-      subject.key(:foo).should == 2
+    its(:identifier) { should == 'unique' }
+
+    it "sets data keys" do
+      subject.data[:foo].should == 2
+    end
+  end
+
+  describe "save" do
+  end
+
+  describe "save!" do
+  end
+
+  describe "average" do
+    context "with defined key" do
     end
 
-    it "sets set keys" do
-      subject.key('bar[]').should == [3.0,4.1,5.1,6]
+    context "with undefined key" do
+    end
+  end
+
+  describe "count" do
+    context "with defined key" do
+    end
+
+    context "with undefined key" do
     end
   end
 end
