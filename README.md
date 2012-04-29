@@ -29,8 +29,34 @@ Daggregator provides a RESTful API with the following endpoints:
 
 ### GET `/node/<id>`
 
-Returns the data defined for node `<id>` and a list of properties which
-can be aggregated (data defined on source nodes).
+Returns the data defined for node `<id>` a list of properties which
+can be aggregated (data defined on source nodes), the list of source
+nodes identifiers and the list of target node identifiers in the 
+following form:
+
+``` javascript
+{
+  'node': {
+    'identifier': <id>,
+    'data': {
+      'foo': 4,
+      'bar': 5
+    },
+    'aggregates': [
+      'baz',
+      'qux'
+    ],
+    'targets': [
+      'identifier_1',
+      'identifier_2'
+    ],
+    'sources': [
+      'identifier_3',
+      'identifier_4'
+    ]
+  }
+}
+```
 
 Returns 404 if the node isn't defined.
 
@@ -54,9 +80,11 @@ set of data key/values in the following form:
 
 ``` javascript
 {
-  'data': {
-    'foo': 1,
-    'bar[]': [3,4,5]
+  'node': {
+    'data': {
+      'foo': 1,
+      'bar[]': [3,4,5]
+    }
   }
 }
 ```
@@ -75,36 +103,7 @@ Returns 500 if the key is defined on one of the node's sources.
 
 Returns 400 if the node doesn't exist.
 
-### DELETE `/node/<id>/key/<key>`
-
-Removes a node's key.  The responsd will be 200 regardless of the existence of
-the key.  
-
-Returns 400 if they node doesn't exist.
-
-### DELETE `/node/<id>`
-
-Removes a node.  Implicitly removes all flows through the node. 
-
-Returns 400 if the node doesn't exist.
-
-### GET `/node/<id>/flows` 
-
-Returns a JSON array of the node identifiers which are targeted by node `<id>`
-in the following form:
-
-``` javascript
-{
-  'targets': [
-    'identifier_1',
-    'identifier_2'
-  ]
-}
-```
-
-Returns 404 if the node doesn't exist.
-
-### PUT `/node/<source id>/flow/<target id>` 
+### PUT `/node/<source id>/flow_to/<target id>` 
 
 Creates a flow from node `<source id>` to node `<target id>`.  
 
@@ -114,12 +113,26 @@ Returns 404 if either of the nodes don't exist.
 
 Returns 500 if the flow would create a loop.
 
-### DELETE `/node/<source id>/flow/<target id>`
+
+### DELETE `/node/<id>/key/<key>`
+
+Removes a node's key.  The responsd will be 200 regardless of the existence of
+the key.  
+
+Returns 400 if they node doesn't exist.
+
+### DELETE `/node/<source id>/flow_to/<target id>`
 
 Removes the flow from node `<source id>` to node `<target id>`.  Returns 200 regardless
 of the existence of the flow.
 
 Returns 404 if either of the nodes don't exist.
+
+### DELETE `/node/<id>`
+
+Removes a node.  Implicitly removes all flows through the node. 
+
+Returns 400 if the node doesn't exist.
 
 
 ## Query API
