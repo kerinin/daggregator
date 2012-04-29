@@ -1,26 +1,29 @@
-# daggregator
+# Daggregator: Aggregation for Directed Acyclic Graphs
 
-Aggregation for directed acyclic graph structures
+Daggregator is a free-standing service for analyzing large sets of connected
+data over a REST API.  Daggregator provides a set of aggregation functions
+(sum and count currently) for arbitrary key/value pairs.
 
-## Introduction
+To use daggregator, simply tell it what objects you want to investigate and
+how they're connected; each object can include any number of named numeric
+values and any number of connections to other targets.
+
+Once you've defined the objects (nodes) in your graph aggregate data can 
+be queried for any node, for example the sum of the key `foo` for any connected
+nodes.
+
+
+## Concepts
 
 Daggregator uses two objects, `node` and `flow`.  Nodes represent
 arbitrary sets of data and aggregated data. The data in nodes is aggregated 
-on other nodes by defining flows between them.
-
-Each node stores a set of key/value pairs; values must be numeric.  
-Daggregator uses dot syntax to namespace keys, so to store a hash 
-like `{foo: {bar: 5, baz: 10}}` you would define the following keys:
-
-```
-foo.bar = 5
-foo.baz = 10
-```
+on other nodes by defining flows between them.  Each node stores a set 
+of key/value pairs; values must be numeric.  
 
 Flows are defined between a source and target node. Flows are created
 by defining a target node for a given source node.  Data defined on
-source nodes is aggregated on target nodes (as well as targets of targets,
-etc). 
+'upstream' nodes is aggregated on 'downstream' nodes ('upstream'
+refers to source nodes)
 
 
 ## CRUD API
