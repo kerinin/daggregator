@@ -132,7 +132,7 @@ Creates a flow from node `<source id>` to nodes `<target1 id>` and
 Returns 200 if the flow already exists or was successfully created.
 
 Returns 404 if the source node don't exist. Implicitly creates
-the target nodes if they doesn't exist.
+the target nodes if they don't exist.
 
 Returns 500 if the flow would create a loop for any of the targets. In
 this case none of the requested flows will be created.
