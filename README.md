@@ -103,7 +103,7 @@ set of data key/values in the following form:
   'node': {
     'data': {
       'foo': 1,
-      'bar[]': [3,4,5]
+      'bar': 2
     }
   }
 }
