@@ -1,27 +1,27 @@
 # Daggregator: Aggregation for Directed Acyclic Graphs
 
-Daggregator is a free-standing service for analyzing large sets of connected
+Daggregator is a free-standing server for analyzing large sets of connected
 data over a REST API.  Daggregator provides a set of aggregation functions
 (sum and count currently) for arbitrary key/value pairs.
 
 To use daggregator, simply tell it what objects you want to investigate and
 how they're connected; each object can include any number of named numeric
-values and any number of connections to other targets.
+values and any number of connections to other targets (so long as those connections
+don't create a loop).
 
 Once you've defined the objects (nodes) in your graph aggregate data can 
-be queried for any node, for example the sum of the key `foo` for any connected
+be queried for any node, for example the sum of the key `foo` for any upstream
 nodes.
 
 
 ## Concepts
 
 Daggregator uses two objects, `node` and `flow`.  Nodes represent
-arbitrary sets of data and aggregated data. The data in nodes is aggregated 
-on other nodes by defining flows between them.  Each node stores a set 
+arbitrary sets of data. The data in nodes is aggregated on other 
+nodes by defining flows between them.  Each node stores a set 
 of key/value pairs; values must be numeric.  
 
-Flows are defined between a source and target node. Flows are created
-by defining a target node for a given source node.  Data defined on
+Flows are defined between a source and target node.  Data defined on
 'upstream' nodes is aggregated on 'downstream' nodes ('upstream'
 refers to source nodes)
 
@@ -122,7 +122,7 @@ otherwise it adds the key.
 
 Returns 500 if the key is defined on one of the node's sources.
 
-Returns 400 if the node doesn't exist.
+Returns 404 if the node doesn't exist.
 
 ### PUT `/node/<source id>/flow_to/<target id>` 
 
@@ -130,7 +130,8 @@ Creates a flow from node `<source id>` to node `<target id>`.
 
 Returns 200 if the flow already exists or was successfully created.
 
-Returns 404 if either of the nodes don't exist.
+Returns 404 if either of the source node don't exist. Implicitly creates
+the target node if it doesn't exist.
 
 Returns 500 if the flow would create a loop.
 
@@ -140,7 +141,7 @@ Returns 500 if the flow would create a loop.
 Removes a node's key.  The responsd will be 200 regardless of the existence of
 the key.  
 
-Returns 400 if they node doesn't exist.
+Returns 404 if they node doesn't exist.
 
 ### DELETE `/node/<source id>/flow_to/<target id>`
 
@@ -153,7 +154,7 @@ Returns 404 if either of the nodes don't exist.
 
 Removes a node.  Implicitly removes all flows through the node. 
 
-Returns 400 if the node doesn't exist.
+Returns 404 if the node doesn't exist.
 
 
 ## Query API
