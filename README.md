@@ -35,9 +35,10 @@ nodes identifiers and the list of target node identifiers in the
 following form:
 
 ``` javascript
+// GET /node/foo
 {
   'node': {
-    'identifier': <id>,
+    'identifier': 'foo',
     'data': {
       'foo': 4,
       'bar': 5
@@ -64,7 +65,25 @@ Returns 404 if the node isn't defined.
 
 Returns an aggregate value of `<key>` using one of the functions
 `SUM`, `AVG`, `MAX`, `MIN` or `COUNT`. `COUNT` returns the number
-of source nodes for which `<key>` is defined.
+of source nodes for which `<key>` is defined. Multiple results
+can be returnd by concatenating (ie `/node/foo/aggregate/bar/SUM+AVG`).
+
+JSON returned in the following format:
+
+``` javascript
+// GET /node/foo/aggregate/bar/SUM+AVG
+{
+  'node': {
+    'identifier': 'foo',
+    'aggregates': {
+      'bar': {
+        'SUM': 3.42,
+        'AVG': 1.1
+      }
+    }
+  }
+}
+``` 
 
 Returns 404 if the key isn't defined for any of the node's sources,
 unless the function is `COUNT`, in which case 0 is returned.
@@ -79,6 +98,7 @@ Expects JSON in the body defining a (possibly empty)
 set of data key/values in the following form:
 
 ``` javascript
+// POST /node/foo
 {
   'node': {
     'data': {
