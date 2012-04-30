@@ -28,6 +28,10 @@ refers to source nodes)
 
 ## CRUD API
 
+NOTE: Daggregator is optimized for write performance.  As a result,
+nodes are not checked for namespace conflicts with upstream nodes and
+new flows are not checked for loop conditions.
+
 Daggregator provides a RESTful API with the following endpoints:
 
 ### GET `/node/<id>`

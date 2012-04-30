@@ -23,11 +23,12 @@ end
 
 gem 'jquery-rails'
 gem 'slim-rails'
-# gem 'neoid' # neo4j ORM
+gem 'neography'
 gem 'pg'
 gem 'active_model_serializers'
 
 group :development, :test do
+  gem 'pry'
   gem 'rspec-rails'
   gem 'json_spec'
 end

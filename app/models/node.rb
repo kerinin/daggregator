@@ -1,6 +1,12 @@
 class Node
   attr_accessor :identifier
 
+  def self.find_by_identifier(identifier)
+    node = Node.new(:identifier => identifier)
+    node.fetch_node_attributes
+    node
+  end
+
   def initialize(attrs)
     attrs.symbolize_keys!
 
@@ -30,8 +36,22 @@ class Node
     @data ||= NodeProperties.new
   end
 
+  def flow_to(target)
+    Flow.new(self, target)
+  end
+
+  def flow_to!(target)
+    flow_to(target).save!
+  end
+
   # Private Methods
 
+  def fetch_node_attributes
+    response = $neo.get_node_index(:identifier, 'identifier', identifier)
+    data.merge! response.first['data']
+  end
+
   def set_node_properties(properties)
+    response = $neo.create_unique_node(:identifier, 'identifier', identifier, data)
   end
 end

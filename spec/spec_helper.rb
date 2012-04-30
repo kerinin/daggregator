@@ -33,4 +33,8 @@ RSpec.configure do |config|
   config.color_enabled = true
   config.formatter = :documentation
   config.include JsonSpec::Helpers
+
+  config.before :each do
+    $neo.clean_database("yes_i_really_want_to_clean_the_database")
+  end
 end
