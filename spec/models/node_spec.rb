@@ -15,16 +15,16 @@ describe Node do
     subject { Node.new( identifier: 'unique' ) }
 
     it "calls save!" do
-      subject.should_receive(:save!).and_return(@node)
+      subject.should_receive(:save!).and_return(subject)
       subject.save
     end
 
-    it "returns true on success" do
+    it "returns false on failure" do
       subject.stub(:save!).and_raise(StandardError)
       subject.save.should be_false
     end
 
-    it "returns false on failure" do
+    it "returns true on success" do
       subject.stub(:save!).and_return(subject)
       subject.save.should be_true
     end
@@ -82,13 +82,18 @@ describe Node do
     subject { Node.new(:identifier => 'unique', :data => {:foo => 10}) }
     
     it "calls create_unique_node" do
-      $neo.should_receive(:create_unique_node).with(:identifier, 'identifier', 'unique', {'foo' => 10} )
+      $neo.should_receive(:create_unique_node).with(:identifier, 'identifier', 'unique', {'identifier' => 'unique', 'foo' => 10} )
       subject.save!
     end
 
-    it "sets properties on the node" do
+    it "sets data on the node" do
       subject.save!
       Node.find_by_identifier('unique').data[:foo].should == 10
+    end
+
+    it "sets url on the node" do
+      subject.save!
+      Node.find_by_identifier('unique').node_url.should match(/db\/data\/node\/\d+/)
     end
   end
 
