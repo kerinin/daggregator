@@ -59,45 +59,27 @@ class Node
   end
 
   def upstream_sum(key)
-    query = <<-CYPHER
-      start n=node({id})
-      match (n)<-[*..]-(source)
-      where source.value
-      return sum(source.#{key}) as #{key}
-    CYPHER
-    if response = execute_query(query, {id: node_id})
+    if response = query.match("(n)<-[*..]-(source)").where("source.#{key}").return("sum(source.#{key}) as #{key}").execute
       response["data"].first.first
     end
   end
 
   def upstream_count(key)
-    query = <<-CYPHER
-      start n=node({id})
-      match (n)<-[*..]-(source)
-      where source.value
-      return count(source) as count
-    CYPHER
-    if response = execute_query(query, {id: node_id})
+    if response = query.match("(n)<-[*..]-(source)").where("source.#{key}").return("count(source) as count").execute
       response["data"].first.first
     end
   end
  
   def target_identifiers
-    # response = QueryBuilder.new(match: '(n)-->(target)', ret: 'target.identifier').execute
-    query = <<-CYPHER
-      start n=node({id})
-      match (n)-->(target)
-      return target.identifier
-    CYPHER
-    if response = execute_query(query, {id: node_id})
+    if response = query.match("(n)-->(target)").return("target.identifier").execute
       response["data"].map(&:first)
     end
   end
 
   # Private Methods
   
-  def execute_query(query, params)
-    $neo.execute_query(query, params)
+  def query
+    QueryBuilder.new(node_id)
   end
 
   def fetch_node_attributes
@@ -108,22 +90,43 @@ class Node
   end
 
   def set_node_properties(properties)
-    response = $neo.create_unique_node(:identifier, 'identifier', identifier, {identifier: identifier}.merge(data))
+    response = $neo.create_unique_node(:identifier, 'identifier', identifier, {'identifier' => identifier}.merge(data))
   end
 
   class QueryBuilder
-    attr_accessor :start, :match, :where, :return, :params
+    attr_accessor :query_elements
 
-    def initialize(params)
-      @start =  params[:start] ||   "start n=node(#{node_id})"    # Default to starting at this node
-      @match =  params[:match] ||   "match (n)<-[*..]-(source)"   # Default to matching upstream nodes
-      @where =  params[:where]
-      @return = params[:return]
-      @params = params[:params] ||  {}
+    def initialize(node_id)
+      @query_elements = {}
+      query_elements[:start] = "n=node(#{node_id})"    # Default to starting at this node
     end
 
-    def execute
-      $neo.execute_query( [start, match, where, ret].compact.join(' '), params)
+    def start(condtiion)
+      query_elements[:start] = condition
+      self
+    end
+
+    def where(condition)
+      query_elements[:where] = condition
+      self
+    end
+
+    def match(condition)
+      query_elements[:match] = condition
+      self
+    end
+
+    def return(condition)
+      query_elements[:return] = condition
+      self
+    end
+
+    def query_string
+      query_elements.reject {|k,v| v.nil?}.flatten.join(' ')
+    end
+
+    def execute(params={})
+      $neo.execute_query( query_string, params)
     end
   end
 end
