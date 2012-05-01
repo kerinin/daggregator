@@ -143,21 +143,52 @@ describe Node do
     # Integration test against neo4j
   end
 
-  describe "average" do
-    context "with defined key" do
-      # Integration test against neo4j
+  context "with aggregation data graph" do
+    before(:each) do
+      @h = Node.create('H')
+      @g = Node.create('G').flow_to!(@h)
+      @f = Node.create('F').flow_to!(@h)
+      @e = Node.create('E').flow_to!(@f).flow_to!(@g)
+      @d = Node.create(identifier: 'D', data: {value: 30}).flow_to!(@e)
+      @c = Node.create('C').flow_to!(@e)
+      @b = Node.create('B').flow_to!(@c)
+      @a = Node.create(identifier: 'A', data: {value: 3, other: 100}).flow_to!(@b)
     end
 
-    context "with undefined key" do
-    end
-  end
+    describe "upstream_sum" do
+      it "aggregates source nodes" do
+        @b.upstream_sum(:value).should == 3
+      end
 
-  describe "count" do
-    context "with defined key" do
-      # Integration test against neo4j
+      it "aggregates sources of sources" do
+        @c.upstream_sum(:value).should == 3
+      end
+
+      it "aggregates sources and sources of sources" do
+        @e.upstream_sum(:value).should == 33
+      end
+
+      it "aggregates diamond shaped sources twice" do
+        @h.upstream_sum(:value).should == 66
+      end
     end
 
-    context "with undefined key" do
+    describe "upstream_count" do
+      it "aggregates source nodes" do
+        @b.upstream_count(:value).should == 1
+      end
+
+      it "aggregates sources of sources" do
+        @c.upstream_count(:value).should == 1
+      end
+
+      it "aggregates sources and sources of sources" do
+        @e.upstream_count(:value).should == 2
+      end
+
+      it "aggregates diamond shaped sources twice" do
+        @h.upstream_count(:value).should == 4
+      end
     end
   end
 end

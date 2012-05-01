@@ -55,15 +55,43 @@ class Node
 
   def flow_to!(target)
     flow_to(target).save!
+    self
   end
 
+  def upstream_sum(key)
+    query = <<-CYPHER
+      start n=node({id})
+      match (n)<-[*..]-(source)
+      where source.value
+      return sum(source.#{key}) as #{key}
+    CYPHER
+    if response = execute_query(query, {id: node_id})
+      response["data"].first.first
+    end
+  end
+
+  def upstream_count(key)
+    query = <<-CYPHER
+      start n=node({id})
+      match (n)<-[*..]-(source)
+      where source.value
+      return count(source) as count
+    CYPHER
+    if response = execute_query(query, {id: node_id})
+      response["data"].first.first
+    end
+  end
+ 
   def target_identifiers
+    # response = QueryBuilder.new(match: '(n)-->(target)', ret: 'target.identifier').execute
     query = <<-CYPHER
       start n=node({id})
       match (n)-->(target)
       return target.identifier
     CYPHER
-    execute_query(query, {id: node_id})["data"].map(&:first) # LOT of shit has to go right for this to work...
+    if response = execute_query(query, {id: node_id})
+      response["data"].map(&:first)
+    end
   end
 
   # Private Methods
@@ -81,5 +109,21 @@ class Node
 
   def set_node_properties(properties)
     response = $neo.create_unique_node(:identifier, 'identifier', identifier, {identifier: identifier}.merge(data))
+  end
+
+  class QueryBuilder
+    attr_accessor :start, :match, :where, :return, :params
+
+    def initialize(params)
+      @start =  params[:start] ||   "start n=node(#{node_id})"    # Default to starting at this node
+      @match =  params[:match] ||   "match (n)<-[*..]-(source)"   # Default to matching upstream nodes
+      @where =  params[:where]
+      @return = params[:return]
+      @params = params[:params] ||  {}
+    end
+
+    def execute
+      $neo.execute_query( [start, match, where, ret].compact.join(' '), params)
+    end
   end
 end
