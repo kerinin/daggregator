@@ -25,6 +25,7 @@ gem 'jquery-rails'
 gem 'slim-rails'
 gem 'neography'
 gem 'pg'
+gem 'activemodel'
 gem 'active_model_serializers'
 
 group :development, :test do

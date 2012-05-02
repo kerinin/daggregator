@@ -1,4 +1,11 @@
 class Node
+  # extend ActiveModel::Naming
+  # extend ActiveModel::Callbacks
+  # include ActiveModel::Validations
+  # include ActiveModel::AttributeMethods
+  # include ActiveModel::Dirty
+  include ActiveModel::SerializerSupport
+
   attr_accessor :identifier
 
   def self.find_by_identifier(identifier)
@@ -85,6 +92,7 @@ class Node
   def fetch_node_attributes
     response = $neo.get_node_index(:identifier, 'identifier', identifier)
     data.merge! response.first['data']
+    data.delete('identifier')
     @node_url = response.first['self']
     response.first
   end

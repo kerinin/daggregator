@@ -1,30 +1,35 @@
 require 'spec_helper'
 
+shared_examples "a successful JSON response" do
+  it("returns JSON") { response.header['Content-Type'].should include 'application/json' }
+  it("returns 20X") { [200,201].should include(response.status) }
+end
+
+shared_examples "a successful JSON response containing" do |json|
+  it_behaves_like "a successful JSON response"
+
+  it "returns expected JSON" do
+    response.body.should include_json(json)
+  end
+end
+
 describe NodesController do
-  shared_examples "a successful JSON response" do
-    it("returns JSON") { response.header['Content-Type'].should include 'application/json' }
-    it("returns 20X") { [200,201].should include(response.status) }
-  end
-
-  shared_examples "a successful JSON response containing" do |json|
-    it_behaves_like "a successful JSON response"
-
-    it "returns expected JSON" do
-      response.body.should include_json(json)
-    end
-  end
-
   describe "GET /node/:id" do
     context "with existing node" do
       before(:each) do
-        @node = Node.new
-        @node.stub(:data).and_return({data1: 1, data2: 2})
-        @node.stub(:aggregates).and_return([:aggregate1, :aggregate2])
-        Node.stub(:find).and_return(@node)
-        get :show, id: 'foo', format: :json
+        target1 = Node.create('foo')
+        target2 = Node.create('bar')
+        node = Node.create(identifier: 'unique', data: {data1: 1, data2: 2}).flow_to!(target1).flow_to!(target2)
+        get :show, id: 'unique', format: :json
       end
 
-      json = %({"node":{"identifier":'foo', "data":{"data1":1, "data2":2}, "aggregates":["aggregate1", "aggregate2"]}})
+      json =<<-JSON
+              {
+              "identifier":"unique", 
+               "data":{"data1":1, "data2":2}, 
+               "targets":["foo","bar"]
+              }
+            JSON
       it_behaves_like "a successful JSON response containing", json
     end
   end
@@ -32,7 +37,7 @@ describe NodesController do
   describe "GET /node/:id/sum/:keys" do
     context "with defined keys" do
       json = %({"node":{"identifier":'foo', "aggregates":{"bar": {"SUM": 5.0, "AVG": 5.0}}}})
-      it_behaves_like "a successfule JSON response containing", json
+      it_behaves_like "a successful JSON response containing", json
     end
 
     context "with undefined keys" do

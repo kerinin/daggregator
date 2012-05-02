@@ -112,6 +112,7 @@ describe Node do
     it "returns the created flow" do
       @source.flow_to(@target).should be_a(Flow)
     end
+
   end
 
   describe "flow_to!" do

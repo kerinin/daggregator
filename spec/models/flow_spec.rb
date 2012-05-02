@@ -58,6 +58,10 @@ describe Flow do
       subject.stub(:set_flow_properties).and_raise(StandardError)
       lambda { subject.save! }.should raise_error(StandardError)
     end
+
+    it "creates the target node if it doesn't exist"
+
+    it "creates the source node if it doesn't exist"
   end
 
   describe "set_flow_properties" do

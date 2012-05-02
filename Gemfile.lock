@@ -154,6 +154,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_model_serializers
+  activemodel
   coffee-rails (~> 3.2.1)
   jquery-rails
   json
