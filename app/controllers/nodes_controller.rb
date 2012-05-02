@@ -23,6 +23,16 @@ class NodesController < ApplicationController
     end
   end
 
+  def sum
+    @node = Node.find_by_identifier(params[:id])
+
+    @aggregates = SumPresenter.new(@node, params[:keys])
+
+    respond_to do |format|
+      format.json { render json: @aggregates.to_json }
+    end
+  end
+
   # PUT /nodes/1
   # PUT /nodes/1.json
   def update

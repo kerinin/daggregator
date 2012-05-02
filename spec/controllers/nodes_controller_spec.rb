@@ -35,16 +35,21 @@ describe NodesController do
   end
 
   describe "GET /node/:id/sum/:keys" do
-    context "with defined keys" do
-      json = %({"node":{"identifier":'foo', "aggregates":{"bar": {"SUM": 5.0, "AVG": 5.0}}}})
-      it_behaves_like "a successful JSON response containing", json
+    before(:each) do
+      @subject = Node.create('target')
+      Node.create(identifier: 'source1', data: {'foo' => 3, 'bar' => 4}).flow_to!(@subject)
+      Node.create(identifier: 'source2', data: {'foo' => 30, 'bar' => 40}).flow_to!(@subject)
+      get :sum, id: 'target', keys: 'foo+bar+baz', format: :json
     end
-
-    context "with undefined keys" do
-      it "raises UndefinedSourceKey" do
-        lambda { get :sum, format: :json, id: 'foo', key: 'bar' }.should raise_error(Daggregator::UndefinedSourceKey)
-      end
-    end
+      
+    json = <<-JSON
+            {
+              "foo":33,
+              "bar":44,
+              "baz":null
+            }
+          JSON
+    it_behaves_like "a successful JSON response containing", json
   end
 
   describe "GET /node/:id/count/:keys" do

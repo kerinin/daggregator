@@ -67,7 +67,14 @@ class Node
 
   def upstream_sum(key)
     if response = query.match("(n)<-[*..]-(source)").where("source.#{key}").return("sum(source.#{key}) as #{key}").execute
-      response["data"].first.first
+      # binding.pry
+      if result = response["data"].first
+        # If there are results
+        result.first
+      else
+        # If this key isn't defined upstream
+        nil
+      end
     end
   end
 
