@@ -67,6 +67,17 @@ class NodesController < ApplicationController
     end
   end
 
+  def flow_to
+    @source = Node.find_by_identifier(params[:id]).save!
+    @target = Node.find_by_identifier(params[:target_id]).save!
+
+    @source.flow_to!(@target)
+
+    respond_to do |format|
+      format.json { render json: {}.to_json }
+    end
+  end
+
   # DELETE /nodes/1
   # DELETE /nodes/1.json
   def destroy

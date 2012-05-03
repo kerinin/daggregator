@@ -29,6 +29,10 @@ class Node
     end
   end
 
+  def persisted?
+    not node_id.nil?
+  end
+
   def save
     begin
       save!
