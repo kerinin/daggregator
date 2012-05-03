@@ -67,7 +67,6 @@ class Node
 
   def upstream_sum(key)
     if response = query.match("(n)<-[*..]-(source)").where("source.#{key}").return("sum(source.#{key}) as #{key}").execute
-      # binding.pry
       if result = response["data"].first
         # If there are results
         result.first
@@ -80,7 +79,11 @@ class Node
 
   def upstream_count(key)
     if response = query.match("(n)<-[*..]-(source)").where("source.#{key}").return("count(source) as count").execute
-      response["data"].first.first
+      if result = response["data"].first
+        result.first
+      else
+        0
+      end
     end
   end
  
@@ -97,15 +100,27 @@ class Node
   end
 
   def fetch_node_attributes
-    response = $neo.get_node_index(:identifier, 'identifier', identifier)
-    data.merge! response.first['data']
-    data.delete('identifier')
-    @node_url = response.first['self']
-    response.first
+    neo(:get_node_index, :identifier, 'identifier', identifier) do |result|
+      data.merge! result['data']
+      data.delete('identifier')
+      @node_url = result['self']
+    end
   end
 
   def set_node_properties(properties)
-    response = $neo.create_unique_node(:identifier, 'identifier', identifier, {'identifier' => identifier}.merge(data))
+    neo(
+      :create_unique_node, 
+      :identifier, 
+      'identifier', 
+      identifier, 
+      {'identifier' => identifier}.merge(data)
+    )
+  end
+
+  def neo(function, *args, &block)
+    response = $neo.send(function, *args)
+    yield response.first if block and response
+    response.try(:first)
   end
 
   class QueryBuilder

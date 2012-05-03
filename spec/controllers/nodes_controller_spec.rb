@@ -24,52 +24,57 @@ describe NodesController do
       end
 
       json =<<-JSON
-              {
-              "identifier":"unique", 
-               "data":{"data1":1, "data2":2}, 
-               "targets":["foo","bar"]
-              }
-            JSON
+        {
+        "identifier":"unique", 
+         "data":{"data1":1, "data2":2}, 
+         "targets":["foo","bar"]
+        }
+      JSON
       it_behaves_like "a successful JSON response containing", json
     end
   end
 
-  describe "GET /node/:id/sum/:keys" do
+  context "with saved data" do
     before(:each) do
       @subject = Node.create('target')
       Node.create(identifier: 'source1', data: {'foo' => 3, 'bar' => 4}).flow_to!(@subject)
       Node.create(identifier: 'source2', data: {'foo' => 30, 'bar' => 40}).flow_to!(@subject)
-      get :sum, id: 'target', keys: 'foo+bar+baz', format: :json
     end
-      
-    json = <<-JSON
-            {
-              "foo":33,
-              "bar":44,
-              "baz":null
-            }
-          JSON
-    it_behaves_like "a successful JSON response containing", json
-  end
+     
+    describe "GET /node/:id/sum/:keys" do
+      before(:each) { get :sum, id: 'target', keys: 'foo+bar+baz', format: :json }
 
-  describe "GET /node/:id/count/:keys" do
-    context "with defined keys" do
+      json = <<-JSON
+        {
+          "foo":33,
+          "bar":44,
+          "baz":null
+        }
+      JSON
+      it_behaves_like "a successful JSON response containing", json
     end
 
-    context "with undefined key" do
-      json = %({"node":{"identifier":'foo', "aggregates":{"bar": {"COUNT": 0}}}})
+    describe "GET /node/:id/count/:keys" do
+      before(:each) { get :count, id: 'target', keys: 'foo+bar+baz', format: :json }
+
+      json = <<-JSON
+        {
+          "foo": 2,
+          "bar": 2,
+          "baz":0
+        }
+      JSON
       it_behaves_like "a successful JSON response containing", json
     end
   end
 
   describe "PUT /node/:id" do
     context "creating new empty node" do
-      before(:each) { post :create, format: :json, id: 'foo' }
+      before(:each) { post :update, format: :json, id: 'foo' }
 
       it("creates a new node") { assigns(:node).should be_a(Node) }
-      it("persists the node") { assigns(:node).should be_persisted }
 
-      json = %({"node":{"identifier": "foo", "data":{}, "aggregates":{}}})
+      json = %({"identifier": "foo", "data":{}, "targets":[]})
       it_behaves_like "a successful JSON response containing", json
     end
 
@@ -78,19 +83,28 @@ describe NodesController do
         { data: { bar: 2, 'baz' => 3 } }
       end
 
-      before(:each) { post :create, format: :json, id: 'foo', node: node_attrs }
+      before(:each) { post :update, format: :json, id: 'foo', node: node_attrs }
 
       it("creates a new node") { assigns(:node).should be_a(Node) }
-      it("persists the node") { assigns(:node).should be_persisted }
 
-      json = %({"node":{"identifier": "foo", "data":{"bar":2.0, "baz":3.0}, "aggregates":{}}})
+      json = %({"identifier": "foo", "data":{"bar":2.0, "baz":3.0}, "targets":[]})
       it_behaves_like "a successful JSON response containing", json
     end
 
-    context "with existing node and no data" do
-    end
+    context "with existing node and new data" do
+      def node_attrs
+        { data: { bar: 2, 'baz' => 3 } }
+      end
 
-    context "with existing node and new valid data" do
+      before(:each) do
+        Node.create(identifier: 'node', data: {foo: 1, bar: 1})
+        post :update, format: :json, id: 'node', node: node_attrs
+      end
+
+      it("creates a new node") { assigns(:node).should be_a(Node) }
+
+      json = %({"identifier": "node", "data":{"foo":1.0, "bar":2.0, "baz":3.0}, "targets":[]})
+      it_behaves_like "a successful JSON response containing", json
     end
   end
 

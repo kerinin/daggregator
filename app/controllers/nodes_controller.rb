@@ -33,15 +33,33 @@ class NodesController < ApplicationController
     end
   end
 
+  def count
+    @node = Node.find_by_identifier(params[:id])
+
+    @aggregates = CountPresenter.new(@node, params[:keys])
+
+    respond_to do |format|
+      format.json { render json: @aggregates.to_json }
+    end
+  end
+
   # PUT /nodes/1
   # PUT /nodes/1.json
   def update
     @node = Node.find_by_identifier(params[:id])
 
+    # Doing this manually cause reverse_merge doesn't trigger assignment
+    # for each key, and I'm using assignment to ensure types
+    if params[:node] and params[:node][:data]
+      params[:node][:data].each_pair do |key,value|
+        @node.data[key] = value
+      end
+    end
+
     respond_to do |format|
-      if @node.update_attributes(params[:node])
+      if @node.save
         format.html { redirect_to @node, notice: 'Node was successfully updated.' }
-        format.json { head :no_content }
+        format.json { render json: @node }
       else
         format.html { render action: "edit" }
         format.json { render json: @node.errors, status: :unprocessable_entity }
