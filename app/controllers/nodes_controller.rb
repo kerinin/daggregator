@@ -1,6 +1,4 @@
 class NodesController < ApplicationController
-  # GET /nodes/1
-  # GET /nodes/1.json
   def show
     @node = Node.find_by_identifier(params[:id])
 
@@ -43,8 +41,6 @@ class NodesController < ApplicationController
     end
   end
 
-  # PUT /nodes/1
-  # PUT /nodes/1.json
   def update
     @node = Node.find_by_identifier(params[:id])
 
@@ -78,8 +74,6 @@ class NodesController < ApplicationController
     end
   end
 
-  # DELETE /nodes/1
-  # DELETE /nodes/1.json
   def destroy
     @node = Node.find_by_identifier(params[:id])
     @node.destroy
