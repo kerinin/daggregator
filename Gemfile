@@ -32,4 +32,5 @@ group :development, :test do
   gem 'pry'
   gem 'rspec-rails'
   gem 'json_spec'
+  gem 'uuid'
 end

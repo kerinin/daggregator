@@ -67,8 +67,8 @@ describe Flow do
   describe "set_flow_properties" do
     # Integration test
     before(:each) do
-      @source = Node.new('source').save!
-      @target = Node.new('target').save!
+      @source = Node.new(uuid).save!
+      @target = Node.new(uuid).save!
     end
     subject { Flow.new(@source, @target) }
 
@@ -79,7 +79,7 @@ describe Flow do
 
     it "creates the relationship" do
       subject.save!
-      @source.target_identifiers.should include('target')
+      @source.target_identifiers.should include(@target.identifier)
     end
   end
 end

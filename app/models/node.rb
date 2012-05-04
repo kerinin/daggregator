@@ -70,7 +70,7 @@ class Node
   end
 
   def upstream_sum(key)
-    if response = query.match("(n)<-[*..]-(source)").where("source.#{key}").return("sum(source.#{key}) as #{key}").execute
+    if response = query.match("(n)<-[*..]-(source)").return("sum(source.#{key}?)").execute
       if result = response["data"].first
         # If there are results
         result.first
@@ -82,7 +82,7 @@ class Node
   end
 
   def upstream_count(key)
-    if response = query.match("(n)<-[*..]-(source)").where("source.#{key}").return("count(source) as count").execute
+    if response = query.match("(n)<-[*..]-(source)").return("count(source.#{key}?)").execute
       if result = response["data"].first
         result.first
       else

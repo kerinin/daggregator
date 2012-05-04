@@ -8,6 +8,10 @@ require 'rspec/autorun'
 # in spec/support/ and its subdirectories.
 Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 
+def uuid
+  UUID.new.generate
+end
+
 RSpec.configure do |config|
   # ## Mock Framework
   #
@@ -33,8 +37,4 @@ RSpec.configure do |config|
   config.color_enabled = true
   config.formatter = :documentation
   config.include JsonSpec::Helpers
-
-  config.before :each do
-    $neo.clean_database("yes_i_really_want_to_clean_the_database")
-  end
 end

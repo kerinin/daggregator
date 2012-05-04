@@ -79,28 +79,29 @@ describe Node do
 
   describe "set_node_properties" do
     # Integration test against neo4j
-    subject { Node.new(:identifier => 'unique', :data => {:foo => 10}) }
+    before(:each) { @id = uuid }
+    subject { Node.new(:identifier => @id, :data => {:foo => 10}) }
     
     it "calls create_unique_node" do
-      $neo.should_receive(:create_unique_node).with(:identifier, 'identifier', 'unique', {'identifier' => 'unique', 'foo' => 10} )
+      $neo.should_receive(:create_unique_node).with(:identifier, 'identifier', @id, {'identifier' => @id, 'foo' => 10} )
       subject.save!
     end
 
     it "sets data on the node" do
       subject.save!
-      Node.find_by_identifier('unique').data[:foo].should == 10
+      Node.find_by_identifier(@id).data[:foo].should == 10
     end
 
     it "sets url on the node" do
       subject.save!
-      Node.find_by_identifier('unique').node_url.should match(/db\/data\/node\/\d+/)
+      Node.find_by_identifier(@id).node_url.should match(/db\/data\/node\/\d+/)
     end
   end
 
   describe "flow_to" do
     before(:each) do
-      @source = Node.new(:identifier => 'source').save!
-      @target = Node.new(:identifier => 'target').save!
+      @source = Node.new(:identifier => uuid).save!
+      @target = Node.new(:identifier => uuid).save!
       Flow.any_instance.stub(:save!).and_return(true)
     end
 
@@ -117,8 +118,8 @@ describe Node do
 
   describe "flow_to!" do
     before(:each) do
-      @source = Node.new(:identifier => 'source').save!
-      @target = Node.new(:identifier => 'target').save!
+      @source = Node.new(:identifier => uuid).save!
+      @target = Node.new(:identifier => uuid).save!
     end
 
     it "calls flow_to" do
@@ -146,18 +147,19 @@ describe Node do
 
   context "with aggregation data graph" do
     before(:each) do
-      @h = Node.create('H')
-      @g = Node.create('G').flow_to!(@h)
-      @f = Node.create('F').flow_to!(@h)
-      @e = Node.create('E').flow_to!(@f).flow_to!(@g)
-      @d = Node.create(identifier: 'D', data: {value: 30}).flow_to!(@e)
-      @c = Node.create('C').flow_to!(@e)
-      @b = Node.create('B').flow_to!(@c)
-      @a = Node.create(identifier: 'A', data: {value: 3, other: 100}).flow_to!(@b)
+      @h = Node.create(uuid)
+      @g = Node.create(uuid).flow_to!(@h)
+      @f = Node.create(uuid).flow_to!(@h)
+      @e = Node.create(uuid).flow_to!(@f).flow_to!(@g)
+      @d = Node.create(identifier: uuid, data: {value: 30}).flow_to!(@e)
+      @c = Node.create(uuid).flow_to!(@e)
+      @b = Node.create(uuid).flow_to!(@c)
+      @a = Node.create(identifier: uuid, data: {value: 3, other: 100}).flow_to!(@b)
     end
 
     describe "upstream_sum" do
       it "aggregates source nodes" do
+        # binding.pry
         @b.upstream_sum(:value).should == 3
       end
 
@@ -176,6 +178,7 @@ describe Node do
 
     describe "upstream_count" do
       it "aggregates source nodes" do
+        # binding.pry
         @b.upstream_count(:value).should == 1
       end
 

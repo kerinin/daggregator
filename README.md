@@ -200,3 +200,13 @@ When specifying constraints on related nodes, the constraints are treated as AND
 so for example `targets:foo=1&sources:bar=5` would return nodes with flows terminating in
 targets with `foo=1` _and_ flows originating in sources with `bar=5`.
 
+## Install
+
+Clone the repo, `bundle install`.  You'll need to install neo4j, and there's a rake task for it:
+
+    rake neo4j:install[community,1.8.M01]
+    rake neo4j:start
+
+If you're using Heroku you can install the addon with
+
+    heroku addons:add neo4j --neo4j-version 1.8.M01
