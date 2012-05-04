@@ -9,7 +9,6 @@ shared_examples "a successful JSON response containing" do |json|
   it_behaves_like "a successful JSON response"
 
   it "returns expected JSON" do
-    puts response.body
     response.body.should include_json(json)
   end
 end
@@ -21,19 +20,23 @@ describe "API v1.0" do
         @target1 = Node.create(uuid)
         @target2 = Node.create(uuid)
         @subject = Node.create(identifier: uuid, data: {data1: 1, data2: 2})
-        @subject.flow_to!(target1)
-        @subject.flow_to!(target2)
-        get "nodes/#{node.identifier}", format: :json
+        @subject.flow_to!(@target1)
+        @subject.flow_to!(@target2)
+        get "nodes/#{@subject.identifier}", format: :json
       end
 
-      json =<<-JSON
-        {
-        "identifier":"#{@subject.identifier}",
-         "data":{"data1":1, "data2":2}, 
-         "targets":["#{@target1.identifier}","#{@target2.identifier}"]
-        }
-      JSON
-      it_behaves_like "a successful JSON response containing", json
+      it_behaves_like "a successful JSON response"
+
+      it "returns expected JSON" do
+        json =<<-JSON
+          {
+          "identifier":"#{@subject.identifier}",
+           "data":{"data1":1, "data2":2}, 
+           "targets":["#{@target1.identifier}","#{@target2.identifier}"]
+          }
+        JSON
+        response.body.should include_json(json)
+      end
     end
   end
 
@@ -49,14 +52,19 @@ describe "API v1.0" do
         get "nodes/#{@subject.identifier}/sum/foo+bar+baz", format: :json
       end
 
-      json = <<-JSON
+      it_behaves_like "a successful JSON response"
+
+      it "returns expected JSON" do
+        json =<<-JSON
         {
           "foo":33,
           "bar":44,
           "baz":null
         }
-      JSON
-      it_behaves_like "a successful JSON response containing", json
+        JSON
+        response.body.should include_json(json)
+      end
+
     end
 
     describe "GET /node/:id/count/:keys" do
@@ -64,14 +72,18 @@ describe "API v1.0" do
         get "nodes/#{@subject.identifier}/count/foo+bar+baz", format: :json
       end
 
-      json = <<-JSON
+      it_behaves_like "a successful JSON response"
+
+      it "returns expected JSON" do
+        json =<<-JSON
         {
           "foo": 2,
           "bar": 2,
           "baz":0
         }
-      JSON
-      it_behaves_like "a successful JSON response containing", json
+        JSON
+        response.body.should include_json(json)
+      end
     end
   end
 
@@ -84,8 +96,12 @@ describe "API v1.0" do
 
       it("creates a new node") { assigns(:node).should be_a(Node) }
 
-      json = %({"identifier": "#{@id}", "data":{}, "targets":[]})
-      it_behaves_like "a successful JSON response containing", json
+      it_behaves_like "a successful JSON response"
+
+      it "returns expected JSON" do
+        json = %({"identifier": "#{@id}", "data":{}, "targets":[]})
+        response.body.should include_json(json)
+      end
     end
 
     context "creating new empty node with explicit values" do
@@ -100,8 +116,12 @@ describe "API v1.0" do
 
       it("creates a new node") { assigns(:node).should be_a(Node) }
 
-      json = %({"identifier": "#{@id}", "data":{"bar":2.0, "baz":3.0}, "targets":[]})
-      it_behaves_like "a successful JSON response containing", json
+      it_behaves_like "a successful JSON response"
+
+      it "returns expected JSON" do
+        json = %({"identifier": "#{@id}", "data":{"bar":2.0, "baz":3.0}, "targets":[]})
+        response.body.should include_json(json)
+      end
     end
 
     context "with existing node and new data" do
@@ -117,8 +137,12 @@ describe "API v1.0" do
 
       it("creates a new node") { assigns(:node).should be_a(Node) }
 
-      json = %({"identifier": "#{@id}", "data":{"foo":1.0, "bar":2.0, "baz":3.0}, "targets":[]})
-      it_behaves_like "a successful JSON response containing", json
+      it_behaves_like "a successful JSON response"
+
+      it "returns expected JSON" do
+        json = %({"identifier": "#{@id}", "data":{"foo":1.0, "bar":2.0, "baz":3.0}, "targets":[]})
+        response.body.should include_json(json)
+      end
     end
   end
 
@@ -134,15 +158,15 @@ describe "API v1.0" do
   describe "PUT /node/:source_id/flow_to/:target_id" do
     context "with existing source and target nodes" do
       before(:each) do
-        source = Node.create(uuid)
-        target = Node.create(uuid)
-        put "nodes/#{source.identifier}/flow_to/#{target.identifier}", format: :json
+        @source = Node.create(uuid)
+        @target = Node.create(uuid)
+        put "nodes/#{@source.identifier}/flow_to/#{@target.identifier}", format: :json
       end
 
       it_behaves_like "a successful JSON response"
 
       it "creates a new flow" do
-        source.target_identifiers.should include(target.identifier)
+        @source.target_identifiers.should include(@target.identifier)
       end
     end
 

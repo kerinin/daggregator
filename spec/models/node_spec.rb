@@ -159,7 +159,6 @@ describe Node do
 
     describe "upstream_sum" do
       it "aggregates source nodes" do
-        # binding.pry
         @b.upstream_sum(:value).should == 3
       end
 
@@ -174,11 +173,14 @@ describe Node do
       it "aggregates diamond shaped sources twice" do
         @h.upstream_sum(:value).should == 66
       end
+
+      it "returns nil if key undefined" do
+        @b.upstream_sum(:missing).should == nil
+      end
     end
 
     describe "upstream_count" do
       it "aggregates source nodes" do
-        # binding.pry
         @b.upstream_count(:value).should == 1
       end
 
@@ -192,6 +194,10 @@ describe Node do
 
       it "aggregates diamond shaped sources twice" do
         @h.upstream_count(:value).should == 4
+      end
+
+      it "returns 0 if key missing" do
+        @b.upstream_count(:missing).should == 0
       end
     end
   end
