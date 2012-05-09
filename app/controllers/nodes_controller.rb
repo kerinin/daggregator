@@ -65,9 +65,21 @@ class NodesController < ApplicationController
 
   def flow_to
     @source = Node.find_by_identifier(params[:id]).save!
-    params[:target_id].split('+').each do |identifier|
+    params[:target_ids].split('+').each do |identifier|
       target = Node.find_by_identifier(identifier).save!
       @source.flow_to!(target)
+    end
+
+    respond_to do |format|
+      format.json { render json: {}.to_json }
+    end
+  end
+  
+  def flow_from
+    @target = Node.find_by_identifier(params[:id]).save!
+    params[:source_ids].split('+').each do |identifier|
+      source = Node.find_by_identifier(identifier).save!
+      source.flow_to!(@target)
     end
 
     respond_to do |format|

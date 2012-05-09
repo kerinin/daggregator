@@ -193,6 +193,44 @@ describe "API v1.0" do
     end
   end
 
+  describe "PUT /node/:target_id/flow_from/:source_ids" do
+    context "with existing source and target nodes" do
+      before(:each) do
+        @source = Node.create(uuid)
+        @target = Node.create(uuid)
+        put "nodes/#{@target.identifier}/flow_from/#{@source.identifier}", format: :json
+      end
+
+      it_behaves_like "a successful JSON response"
+
+      it "creates a new flow" do
+        @source.target_identifiers.should include(@target.identifier)
+      end
+    end
+
+    context "with new nodes" do
+      before(:each) do
+        @source_id = uuid
+        @target_id = uuid
+        put "nodes/#{@target_id}/flow_from/#{@source_id}", format: :json
+      end
+
+      it_behaves_like "a successful JSON response"
+
+      it "creates the source node" do
+        Node.new(@source_id).should be_persisted
+      end
+
+      it "creates the target node" do
+        Node.new(@target_id).should be_persisted
+      end
+
+      it "creates a new flow" do
+        Node.new(@source_id).target_identifiers.should include(@target_id)
+      end
+    end
+  end
+
   describe "DELETE /node/:id/key/:key" do
     context "with existing node and data key" do
     end

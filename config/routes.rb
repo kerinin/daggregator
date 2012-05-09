@@ -6,7 +6,8 @@ Daggregator::Application.routes.draw do
       get 'key/:key', :action => 'key'
       get 'sum/:keys', :action => 'sum'
       get 'count/:keys', :action => 'count'
-      put 'flow_to/:target_id', :action => 'flow_to'
+      put 'flow_to/:target_ids', :action => 'flow_to'
+      put 'flow_from/:source_ids', :action => 'flow_from'
     end
   end
 

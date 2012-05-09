@@ -142,6 +142,11 @@ Returns 500 if the flow would create a loop for any of the targets. In
 this case none of the requested flows will be created.
 
 
+### PUT `/node/<target id>/flow_from/<source id>+<source id>` 
+
+Opposite of `flow_to`
+
+
 ### DELETE `/node/<id>/key/<key>`
 
 Removes a node's key.  The responsd will be 200 regardless of the existence of
