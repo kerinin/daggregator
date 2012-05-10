@@ -66,27 +66,35 @@ following form:
 Returns 404 if the node isn't defined.  Returns 500 if data keys
 specify an unrecognized type (valid options are `numeric.` and `text.`)
 
-### GET `/node/<id>/numeric.<key>/[sum|avg]`
+### GET or PUT `/node/<id>/[sum|avg]/numeric.<key1>+numeric.<key2>
 
 Numeric functions. Returns an aggregate value of `<key>` using one 
-of the functions `sum` or `avg`.
+of the functions `sum` or `avg`. Multipe keys can be summed by combining
+them with a `+`.  
+
+Query options can be included as querystring params or PUT as form values.
 
 JSON returned in the following format:
 
 ``` javascript
-// GET /node/foo/numeric.bar/sum
+// GET /node/foo/sum/numeric.bar+numeric.baz
 {
   'node': {
     'identifier': 'foo',
-    'sum': {'numeric.bar': 3.42}
+    'sum': {
+      'numeric.bar': 3.42,
+      'numeric.baz': 9.53,
+    }
   }
 }
 ``` 
 
-### GET `/node/<id>/count`
+### GET or PUT `/node/<id>/count`
 
 Returns the numer of upstream nodes for node `id`.  Can be combined
 with queries (see below).
+
+Query options can be included as querystring params or PUT as form values.
 
 JSON returned in the following format:
 
@@ -104,15 +112,17 @@ JSON returned in the following format:
 
 Returns 404 if the node isn't defined.
 
-### GET `/node/<id>/key/<key>/hist`
+### GET or PUT `/node/<id>/hist/<key1>+<key2>`
 
 Returns a histogram of  the values of `key` for the node's 
-upstream sources.
+upstream sources.  Multiple keys possible like above.
+
+Query options can be included as querystring params or PUT as form values.
 
 JSON returned in the following format:
 
 ``` javascript
-// GET /node/foo/key/text.bar/hist
+// GET /node/foo/hist/text.bar+text.baz
 {
   'node': {
     'identifier': 'foo',
@@ -121,6 +131,10 @@ JSON returned in the following format:
         'string1': 1,
         'string2': 4,
         'string4': 3
+      },
+      'text.baz': {
+        'string1': 4,
+        'string2': 1
       }
     }
   }
