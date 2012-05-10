@@ -46,13 +46,11 @@ following form:
 {
   'node': {
     'identifier': 'foo',
-    'numeric_data': {
-      'foo': 4,
-      'bar': 5
-    },
-    'text_data': {
-      'baz': 'hello',
-      'qux': 'there'
+    'data': {
+      'numeric.foo': 4,
+      'numeric.bar': 5
+      'text.baz': 'hello',
+      'text.qux': 'there'
     'targets': [
       'identifier_1',
       'identifier_2'
@@ -65,23 +63,22 @@ following form:
 }
 ```
 
-Returns 404 if the node isn't defined.
+Returns 404 if the node isn't defined.  Returns 500 if data keys
+specify an unrecognized type (valid options are `numeric.` and `text.`)
 
-### GET `/node/<id>/numeric_key/<key>/[sum|avg]`
+### GET `/node/<id>/numeric.<key>/[sum|avg]`
 
-Returns an aggregate value of `<key>` using one of the functions
-`sum` or `avg`.
+Numeric functions. Returns an aggregate value of `<key>` using one 
+of the functions `sum` or `avg`.
 
 JSON returned in the following format:
 
 ``` javascript
-// GET /node/foo/numeric_key/bar/sum
+// GET /node/foo/numeric.bar/sum
 {
   'node': {
     'identifier': 'foo',
-    'sum': {
-      'numeric_data': {'bar': 3.42}
-    }
+    'sum': {'numeric.bar': 3.42}
   }
 }
 ``` 
@@ -94,12 +91,12 @@ with queries (see below).
 JSON returned in the following format:
 
 ``` javascript
-// GET /node/foo/upstream/count?bar.lt=5
+// GET /node/foo/upstream/count?numeric.bar.lt=5
 {
   'node': {
     'identifier': 'foo',
     'count': {
-      'bar.lt=5': 15
+      'numeric.bar.lt=5': 15
     }
   }
 }
@@ -107,7 +104,7 @@ JSON returned in the following format:
 
 Returns 404 if the node isn't defined.
 
-### GET `/node/<id>/text_key/<key>/hist`
+### GET `/node/<id>/key/<key>/hist`
 
 Returns a histogram of  the values of `key` for the node's 
 upstream sources.
@@ -115,17 +112,15 @@ upstream sources.
 JSON returned in the following format:
 
 ``` javascript
-// GET /node/foo/text_key/bar/hist
+// GET /node/foo/key/text.bar/hist
 {
   'node': {
     'identifier': 'foo',
     'hist': {
-      'text_data': {
-        'bar': {
-          'string1': 1,
-          'string2': 4,
-          'string4': 3
-        }
+      'text.bar': {
+        'string1': 1,
+        'string2': 4,
+        'string4': 3
       }
     }
   }
@@ -148,13 +143,11 @@ set of data key/values in the following form:
 // POST /node/foo
 {
   'node': {
-    'numeric_data': {
-      'foo': 1,
-      'bar': 2
-    },
-    'text_data': {
-      'baz': 'howdy',
-      'qux': 'partner'
+    'data': {
+      'numeric.foo': 1,
+      'numeric.bar': 2
+      'text.baz': 'howdy',
+      'text.qux': 'partner'
     }
   }
 }
@@ -164,16 +157,16 @@ If the node already exists, the attributes specified will be updated, and all
 other attributes will be left unmodified.  
 
 
-### PUT `/node/<id>/[numeric_key|text_key]/<key>/<value>` 
+### PUT `/node/<id>/key/<key>/<value>` 
 
 Sets a numeric key's value. If the key is already defined, it updates the value,
 otherwise it adds the key. 
 
 ``` javascript
-// PUT /node/foo/numeric_key/bar/5.3
+// PUT /node/foo/key/numeric.bar/5.3
 {}
 
-// PUT /node/foo/text_key/baz/Hellooooo
+// PUT /node/foo/key/text.baz/Hellooooo
 {}
 ```
 
