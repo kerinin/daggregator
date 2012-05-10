@@ -66,7 +66,7 @@ following form:
 Returns 404 if the node isn't defined.  Returns 500 if data keys
 specify an unrecognized type (valid options are `numeric.` and `text.`)
 
-### GET or PUT `/node/<id>/[sum|avg]/numeric.<key1>+numeric.<key2>
+### GET or PUT `/node/<id>/[sum|avg]/numeric.<key1>+numeric.<key2>`
 
 Numeric functions. Returns an aggregate value of `<key>` using one 
 of the functions `sum` or `avg`. Multipe keys can be summed by combining
@@ -91,8 +91,7 @@ JSON returned in the following format:
 
 ### GET or PUT `/node/<id>/count`
 
-Returns the numer of upstream nodes for node `id`.  Can be combined
-with queries (see below).
+Returns the numer of upstream nodes for node `id`. 
 
 Query options can be included as querystring params or PUT as form values.
 
@@ -231,7 +230,7 @@ Returns 404 if the node doesn't exist.
 
 ## Query API
 
-Nodes can be queried at the by GET-ting `/node` with a list of parameters.  All nodes
+Nodes can be queried at the by GET-ting or PUT-ting with a list of parameters.  All nodes
 accept the following parameters:
 
 * `limit=<n>` the maximum number of records to return
