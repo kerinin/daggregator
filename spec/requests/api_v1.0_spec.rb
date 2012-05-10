@@ -19,7 +19,12 @@ describe "API v1.0" do
       before(:each) do
         @target1 = Node.create(uuid)
         @target2 = Node.create(uuid)
-        @subject = Node.create(identifier: uuid, data: {data1: 1, data2: 2})
+        @subject = Node.create(identifier: uuid, data: {
+          'numeric:data1' => 1, 
+          'numeric:data2' => 2,
+          'text:data1' => 'hello',
+          'text:data2' => 'there'
+        })
         @subject.flow_to!(@target1)
         @subject.flow_to!(@target2)
         get "nodes/#{@subject.identifier}", format: :json
@@ -31,7 +36,7 @@ describe "API v1.0" do
         json =<<-JSON
           {
           "identifier":"#{@subject.identifier}",
-           "data":{"data1":1, "data2":2}, 
+           "data":{"numeric:data1":1, "numeric:data2":2, "text:data1": "hello", "text:data2": "there"}, 
            "targets":["#{@target1.identifier}","#{@target2.identifier}"]
           }
         JSON
@@ -43,13 +48,23 @@ describe "API v1.0" do
   context "with saved data" do
     before(:each) do
       @subject = Node.create(uuid)
-      Node.create(identifier: uuid, data: {'foo' => 3, 'bar' => 4}).flow_to!(@subject)
-      Node.create(identifier: uuid, data: {'foo' => 30, 'bar' => 40}).flow_to!(@subject)
+      Node.create(identifier: uuid, data: {
+        'numeric:foo' => 3,
+        'numeric:bar' => 4,
+        'text:foo' => 'three',
+        'text:bar' => 'four'
+      }).flow_to!(@subject)
+      Node.create(identifier: uuid, data: {
+        'numeric:foo' => 30,
+        'numeric:bar' => 40,
+        'text:foo' => 'thirty',
+        'text:bar' => 'fourty'
+      }).flow_to!(@subject)
     end
      
     describe "GET /node/:id/sum/:keys" do
       before(:each) do
-        get "nodes/#{@subject.identifier}/sum/foo+bar+baz", format: :json
+        get "nodes/#{@subject.identifier}/sum/numeric:foo+numeric:bar+numeric:baz", format: :json
       end
 
       it_behaves_like "a successful JSON response"
@@ -57,9 +72,9 @@ describe "API v1.0" do
       it "returns expected JSON" do
         json =<<-JSON
         {
-          "foo":33,
-          "bar":44,
-          "baz":null
+          "numeric:foo":33,
+          "numeric:bar":44,
+          "numeric:baz":null
         }
         JSON
         response.body.should include_json(json)
@@ -68,6 +83,7 @@ describe "API v1.0" do
     end
 
     describe "GET /node/:id/count/:keys" do
+      pending "query syntax"
       before(:each) do
         get "nodes/#{@subject.identifier}/count/foo+bar+baz", format: :json
       end
@@ -106,7 +122,7 @@ describe "API v1.0" do
 
     context "creating new empty node with explicit values" do
       def node_attrs
-        { data: { bar: 2, 'baz' => 3 } }
+        { data: { 'numeric:bar' => 2, 'numeric:baz' => 3, 'text:bar' => 'two', 'text:baz' => 'three' } }
       end
 
       before(:each) do
@@ -119,19 +135,19 @@ describe "API v1.0" do
       it_behaves_like "a successful JSON response"
 
       it "returns expected JSON" do
-        json = %({"identifier": "#{@id}", "data":{"bar":2.0, "baz":3.0}, "targets":[]})
+        json = %({"identifier": "#{@id}", "data":{"numeric:bar":2.0, "numeric:baz":3.0, "text:bar":"two", "text:baz":"three"}, "targets":[]})
         response.body.should include_json(json)
       end
     end
 
     context "with existing node and new data" do
       def node_attrs
-        { data: { bar: 2, 'baz' => 3 } }
+        { data: { 'numeric:bar' => 2, 'numeric:baz' => 3, 'text:bar' => 'two', 'text:baz' => 'three'} }
       end
 
       before(:each) do
         @id = uuid
-        Node.create(identifier: @id, data: {foo: 1, bar: 1})
+        Node.create(identifier: @id, data: {'numeric:foo' => 1, 'numeric:bar' => 1, 'text:foo' => 'one', 'text:bar' => 'one'})
         put "nodes/#{@id}", :format => :json, :node => node_attrs
       end
 
@@ -140,7 +156,7 @@ describe "API v1.0" do
       it_behaves_like "a successful JSON response"
 
       it "returns expected JSON" do
-        json = %({"identifier": "#{@id}", "data":{"foo":1.0, "bar":2.0, "baz":3.0}, "targets":[]})
+        json = %({"identifier": "#{@id}", "data":{"numeric:foo":1.0, "numeric:bar":2.0, "numeric:baz":3.0, "text:foo":"one", "text:bar":"two", "text:baz":"three"}, "targets":[]})
         response.body.should include_json(json)
       end
     end
