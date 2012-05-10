@@ -148,11 +148,11 @@ set of data key/values in the following form:
 // POST /node/foo
 {
   'node': {
-    'numeric': {
+    'numeric_data': {
       'foo': 1,
       'bar': 2
     },
-    'text': {
+    'text_data': {
       'baz': 'howdy',
       'qux': 'partner'
     }
