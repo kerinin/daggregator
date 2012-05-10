@@ -19,7 +19,8 @@ nodes.
 Daggregator uses two objects, `node` and `flow`.  Nodes represent
 arbitrary sets of data. The data in nodes is aggregated on other 
 nodes by defining flows between them.  Each node stores a set 
-of key/value pairs; values must be numeric.  
+of key/value pairs.  Two types of keys can be defined; numeric
+keys and text keys.
 
 Flows are defined between a source and target node.  Data defined on
 'upstream' nodes is aggregated on 'downstream' nodes ('upstream'
@@ -28,8 +29,7 @@ refers to source nodes)
 
 ## CRUD API
 
-NOTE: Daggregator is optimized for write performance.  As a result,
-nodes are not checked for namespace conflicts with upstream nodes and
+Nodes are not checked for key namespace conflicts with upstream nodes and
 new flows are not checked for loop conditions.
 
 Daggregator provides a RESTful API with the following endpoints:
@@ -46,14 +46,13 @@ following form:
 {
   'node': {
     'identifier': 'foo',
-    'data': {
+    'numeric_data': {
       'foo': 4,
       'bar': 5
     },
-    'aggregates': [
-      'baz',
-      'qux'
-    ],
+    'text_data': {
+      'baz': 'hello',
+      'qux': 'there'
     'targets': [
       'identifier_1',
       'identifier_2'
@@ -68,30 +67,73 @@ following form:
 
 Returns 404 if the node isn't defined.
 
-### GET `/node/<id>/[sum|count]/<key1>+<key2>`
+### GET `/node/<id>/numeric_key/<key>/[sum|avg]
 
 Returns an aggregate value of `<key>` using one of the functions
-`sum` or `count`. `count` returns the number
-of source nodes for which `<key>` is defined. Results for multiple keys
-can be returnd by concatenating with `+` (ie `/node/foo/sum/bar+baz`).
+`sum` or `avg`.
 
 JSON returned in the following format:
 
 ``` javascript
-// GET /node/foo/sum/bar+baz
+// GET /node/foo/numeric_key/bar/sum
 {
   'node': {
     'identifier': 'foo',
-    'aggregates': {
-      'bar': { 'SUM': 3.42 },
-      'baz': { 'SUM': 3.24 }
+    'sum': {
+      'numeric': {'bar': 3.42}
     }
   }
 }
 ``` 
 
-Returns 404 if the key isn't defined for any of the node's sources,
-unless the function is `COUNT`, in which case 0 is returned.
+### GET `/node/<id>/count`
+
+Returns the numer of upstream nodes for node `id`.  Can be combined
+with queries (see below).
+
+JSON returned in the following format:
+
+``` javascript
+// GET /node/foo/upstream/count?bar.lt=5
+{
+  'node': {
+    'identifier': 'foo',
+    'count': {
+      'bar.lt=5': 15
+    }
+  }
+}
+```
+
+Returns 404 if the node isn't defined.
+
+### GET `/node/<id>/text_key/<key>/hist`
+
+Returns a histogram of  the values of `key` for the node's 
+upstream sources.
+
+JSON returned in the following format:
+
+``` javascript
+// GET /node/foo/text_key/bar/hist
+{
+  'node': {
+    'identifier': 'foo',
+    'hist': {
+      'text': {
+        'bar': {
+          'string1': 1,
+          'string2': 4,
+          'string4': 3
+        }
+      }
+    }
+  }
+}
+```
+
+Returns 404 if the node isn't defined
+
 
 ### PUT `/node/<id>`
 
@@ -106,9 +148,13 @@ set of data key/values in the following form:
 // POST /node/foo
 {
   'node': {
-    'data': {
+    'numeric': {
       'foo': 1,
       'bar': 2
+    },
+    'text': {
+      'baz': 'howdy',
+      'qux': 'partner'
     }
   }
 }
@@ -117,16 +163,24 @@ set of data key/values in the following form:
 If the node already exists, the attributes specified will be updated, and all
 other attributes will be left unmodified.  
 
-Returns 500 if a new key conflicts with a key defined on one of the node's sources.
 
-### PUT `/node/<id>/key/<key>/5.3` 
+### PUT `/node/<id>/[numeric_key|text_key]/<key>/<value>` 
 
-Sets a key's value. If the key is already defined, it updates the value,
+Sets a numeric key's value. If the key is already defined, it updates the value,
 otherwise it adds the key. 
+
+``` javascript
+// PUT /node/foo/numeric_key/bar/5.3
+{}
+
+// PUT /node/foo/text_key/baz/Hellooooo
+{}
+```
 
 Returns 500 if the key is defined on one of the node's sources.
 
 Returns 404 if the node doesn't exist.
+
 
 ### PUT `/node/<source id>/flow_to/<target1 id>+<target2 id>` 
 
