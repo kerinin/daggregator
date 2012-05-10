@@ -67,7 +67,7 @@ following form:
 
 Returns 404 if the node isn't defined.
 
-### GET `/node/<id>/numeric_key/<key>/[sum|avg]
+### GET `/node/<id>/numeric_key/<key>/[sum|avg]`
 
 Returns an aggregate value of `<key>` using one of the functions
 `sum` or `avg`.
@@ -80,7 +80,7 @@ JSON returned in the following format:
   'node': {
     'identifier': 'foo',
     'sum': {
-      'numeric': {'bar': 3.42}
+      'numeric_data': {'bar': 3.42}
     }
   }
 }
@@ -120,7 +120,7 @@ JSON returned in the following format:
   'node': {
     'identifier': 'foo',
     'hist': {
-      'text': {
+      'text_data': {
         'bar': {
           'string1': 1,
           'string2': 4,
