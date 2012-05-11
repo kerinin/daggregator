@@ -6,8 +6,7 @@ data over a REST API.  Daggregator provides a set of aggregation functions
 
 To use daggregator, simply tell it what objects you want to investigate and
 how they're connected; each object can include any number of named numeric
-values and any number of connections to other targets (so long as those connections
-don't create a loop).
+values and any number of connections to other targets.
 
 Once you've defined the objects (nodes) in your graph aggregate data can 
 be queried for any node, for example the sum of the key `foo` for any upstream
@@ -19,7 +18,7 @@ nodes.
 Daggregator uses two objects, `node` and `flow`.  Nodes represent
 arbitrary sets of data. The data in nodes is aggregated on other 
 nodes by defining flows between them.  Each node stores a set 
-of key/value pairs; values must be numeric.  
+of key/value pairs.
 
 Flows are defined between a source and target node.  Data defined on
 'upstream' nodes is aggregated on 'downstream' nodes ('upstream'
@@ -28,16 +27,11 @@ refers to source nodes)
 
 ## CRUD API
 
-NOTE: Daggregator is optimized for write performance.  As a result,
-nodes are not checked for namespace conflicts with upstream nodes and
-new flows are not checked for loop conditions.
-
 Daggregator provides a RESTful API with the following endpoints:
 
 ### GET `/node/<id>`
 
-Returns the data defined for node `<id>` a list of properties which
-can be aggregated (data defined on source nodes), the list of source
+Returns the data defined for node `<id>` the list of source
 nodes identifiers and the list of target node identifiers in the 
 following form:
 
@@ -47,13 +41,11 @@ following form:
   'node': {
     'identifier': 'foo',
     'data': {
-      'foo': 4,
-      'bar': 5
+      'numeric_foo': 4,
+      'numeric_bar': 5,
+      'text_foo': 'four',
+      'text_bar': 'five'
     },
-    'aggregates': [
-      'baz',
-      'qux'
-    ],
     'targets': [
       'identifier_1',
       'identifier_2'
@@ -83,20 +75,22 @@ JSON returned in the following format:
   'node': {
     'identifier': 'foo',
     'aggregates': {
-      'bar': { 'SUM': 3.42 },
-      'baz': { 'SUM': 3.24 }
+      'numeric_bar': { 'SUM': 3.42 },
+      'numeric_baz': { 'SUM': 3.24 },
+      'text_foo': { 'SUM': null}
     }
   }
 }
 ``` 
 
-Returns 404 if the key isn't defined for any of the node's sources,
-unless the function is `COUNT`, in which case 0 is returned.
+`sum` returns `null` if the key isn't defined for any sources (text 
+strings are considered null).  `count` returns 0 if the key isn't 
+defined.
 
 ### PUT `/node/<id>`
 
 Creates/updates a node. Nodes are created with a user-defined `<id>` 
-value, which must be unique across all nodes.  The id parameter will be
+value, which should be unique across all nodes.  The id parameter will be
 converted to a string, and can contain any character excluding `:`, `/`.
 
 Expects JSON in the body defining a (possibly empty) 
@@ -107,8 +101,9 @@ set of data key/values in the following form:
 {
   'node': {
     'data': {
-      'foo': 1,
-      'bar': 2
+      'numeric_foo': 1,
+      'numeric_bar': 2,
+      'text_foo': 'one'
     }
   }
 }
@@ -117,14 +112,11 @@ set of data key/values in the following form:
 If the node already exists, the attributes specified will be updated, and all
 other attributes will be left unmodified.  
 
-Returns 500 if a new key conflicts with a key defined on one of the node's sources.
 
 ### PUT `/node/<id>/key/<key>/5.3` 
 
 Sets a key's value. If the key is already defined, it updates the value,
 otherwise it adds the key. 
-
-Returns 500 if the key is defined on one of the node's sources.
 
 Returns 404 if the node doesn't exist.
 
@@ -133,13 +125,7 @@ Returns 404 if the node doesn't exist.
 Creates a flow from node `<source id>` to nodes `<target1 id>` and
 `<target2 id>`.  
 
-Returns 200 if the flow already exists or was successfully created.
-
-Returns 404 if the source node don't exist. Implicitly creates
-the target nodes if they don't exist.
-
-Returns 500 if the flow would create a loop for any of the targets. In
-this case none of the requested flows will be created.
+Implicitly creates the nodes if they don't exist.
 
 
 ### PUT `/node/<target id>/flow_from/<source id>+<source id>` 
@@ -168,7 +154,7 @@ Removes a node.  Implicitly removes all flows through the node.
 Returns 404 if the node doesn't exist.
 
 
-## Query API
+## Query API (Very preliminary, not implemented)
 
 Nodes can be queried at the by GET-ting `/node` with a list of parameters.  All nodes
 accept the following parameters:
