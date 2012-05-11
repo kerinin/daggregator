@@ -19,7 +19,7 @@ describe "API v1.0" do
       before(:each) do
         @target1 = Node.create(uuid)
         @target2 = Node.create(uuid)
-        @subject = Node.create(identifier: uuid, data: {data1: 1, data2: 2})
+        @subject = Node.create(identifier: uuid, data: {numeric_data1: 1, numeric_data2: '2', text_data: 'hello'})
         @subject.flow_to!(@target1)
         @subject.flow_to!(@target2)
         get "nodes/#{@subject.identifier}", format: :json
@@ -31,7 +31,7 @@ describe "API v1.0" do
         json =<<-JSON
           {
           "identifier":"#{@subject.identifier}",
-           "data":{"data1":1, "data2":2}, 
+           "data":{"numeric_data1":1, "numeric_data2":2.0, "text_data":"hello"}, 
            "targets":["#{@target1.identifier}","#{@target2.identifier}"]
           }
         JSON
@@ -43,13 +43,13 @@ describe "API v1.0" do
   context "with saved data" do
     before(:each) do
       @subject = Node.create(uuid)
-      Node.create(identifier: uuid, data: {'foo' => 3, 'bar' => 4}).flow_to!(@subject)
-      Node.create(identifier: uuid, data: {'foo' => 30, 'bar' => 40}).flow_to!(@subject)
+      Node.create(identifier: uuid, data: {'foo' => 3, 'bar' => '4', 'baz' => 'hello'}).flow_to!(@subject)
+      Node.create(identifier: uuid, data: {'foo' => 30, 'bar' => '40', 'baz' => 'there'}).flow_to!(@subject)
     end
      
     describe "GET /node/:id/sum/:keys" do
       before(:each) do
-        get "nodes/#{@subject.identifier}/sum/foo+bar+baz", format: :json
+        get "nodes/#{@subject.identifier}/sum/foo+bar+baz+qux", format: :json
       end
 
       it_behaves_like "a successful JSON response"
@@ -59,7 +59,8 @@ describe "API v1.0" do
         {
           "foo":33,
           "bar":44,
-          "baz":null
+          "baz":null,
+          "qux":null
         }
         JSON
         response.body.should include_json(json)
@@ -69,7 +70,7 @@ describe "API v1.0" do
 
     describe "GET /node/:id/count/:keys" do
       before(:each) do
-        get "nodes/#{@subject.identifier}/count/foo+bar+baz", format: :json
+        get "nodes/#{@subject.identifier}/count/foo+bar+baz+qux", format: :json
       end
 
       it_behaves_like "a successful JSON response"
@@ -79,7 +80,8 @@ describe "API v1.0" do
         {
           "foo": 2,
           "bar": 2,
-          "baz":0
+          "baz":2,
+          "qux":0
         }
         JSON
         response.body.should include_json(json)
@@ -106,7 +108,7 @@ describe "API v1.0" do
 
     context "creating new empty node with explicit values" do
       def node_attrs
-        { data: { bar: 2, 'baz' => 3 } }
+        { data: { bar: 2, 'baz' => '3', 'qux' => 'hello'} }
       end
 
       before(:each) do
@@ -119,19 +121,19 @@ describe "API v1.0" do
       it_behaves_like "a successful JSON response"
 
       it "returns expected JSON" do
-        json = %({"identifier": "#{@id}", "data":{"bar":2.0, "baz":3.0}, "targets":[]})
+        json = %({"identifier": "#{@id}", "data":{"bar":2.0, "baz":3.0, "qux":"hello"}, "targets":[]})
         response.body.should include_json(json)
       end
     end
 
     context "with existing node and new data" do
       def node_attrs
-        { data: { bar: 2, 'baz' => 3 } }
+        { data: { bar: 2, 'baz' => 3, 'qux' => 'hello' } }
       end
 
       before(:each) do
         @id = uuid
-        Node.create(identifier: @id, data: {foo: 1, bar: 1})
+        Node.create(identifier: @id, data: {foo: 1, bar: 1, qux: 'there'})
         put "nodes/#{@id}", :format => :json, :node => node_attrs
       end
 
@@ -140,7 +142,7 @@ describe "API v1.0" do
       it_behaves_like "a successful JSON response"
 
       it "returns expected JSON" do
-        json = %({"identifier": "#{@id}", "data":{"foo":1.0, "bar":2.0, "baz":3.0}, "targets":[]})
+        json = %({"identifier": "#{@id}", "data":{"foo":1.0, "bar":2.0, "baz":3.0, "qux":"hello"}, "targets":[]})
         response.body.should include_json(json)
       end
     end

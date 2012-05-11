@@ -18,10 +18,16 @@ describe NodeProperties do
       it("sets the value") { subject['foo'].should == 2.1 }
     end
 
-    context "with string value" do
-      before(:each) { subject[:foo] = '1' }
+    context "with numeric string value" do
+      before(:each) { subject[:foo] = '1.0' }
 
       it("converts to float") { subject['foo'].should == 1.0 }
+    end
+
+    context "with string value" do
+      before(:each) { subject[:foo] = 'hello' }
+
+      it("sets the value") { subject['foo'].should == 'hello' }
     end
 
     context "with key defined on a source node" do
