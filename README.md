@@ -87,6 +87,64 @@ JSON returned in the following format:
 strings are considered null).  `count` returns 0 if the key isn't 
 defined.
 
+### GET `/node/<id>/distribution/<key1>+<key2>`
+
+Returns a hash of the number of occurrances of each unique for of `key` in 
+the node's upstream graph.  For numeric keys, consider using the `bin_count`
+function.
+
+``` javascript
+// GET /node/foo/distribution/bar+baz
+{
+  'node': {
+    'identifier': 'foo',
+    'aggregates': {
+      'bar': {
+        'lorem': 10,
+        'ipsum': 2,
+        'dolor': 35
+      },
+      'baz': {
+        'ipsum': 20,
+        'dolor': 2
+      }
+    }
+  }
+}
+```
+
+
+### GET `/node/<id>/bin_count/<key1>+<key2>?bins=10&`
+
+Divides the range of `key` into `bins` equal-sized regions and
+returns the number of upstream nodes whose value lies within each
+region.  Expects numeric values.
+
+``` javascript
+// GET /node/foo/distribution/bar+baz?bins=3
+{
+  'node': {
+    'identifier': 'foo',
+    'aggregates': {
+      'bar': {
+        '[0,5)': 2,
+        '[5,10)': 5,
+        '[10,15]': 3
+      },
+      'baz': {
+        '[20,21.5)': 34,
+        '[21.5,23)': 3,
+        '[23,24.5]': 23
+      }
+    }
+  }
+}
+```
+
+If no values are defined or all the values are the same, returns
+null (ie `'bar': null`).
+
+
 ### PUT `/node/<id>`
 
 Creates/updates a node. Nodes are created with a user-defined `<id>` 

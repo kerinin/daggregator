@@ -70,27 +70,76 @@ class Node
   end
 
   def upstream_sum(key)
-    if response = query.match("(n)<-[*..]-(source)").where("has(source.#{key})").return("sum(source.#{key})").execute
-      if result = response["data"].first
-        # If there are results
-        result.first
+    result_or(nil) do
+      query.match("(n)<-[*..]-(source)").where("has(source.#{key})").return("sum(source.#{key})").execute
+    end
+  end
+
+  def upstream_count(key, value=nil)
+    result_or(0) do
+      if value
+        # Match upstream with key=value
+        escaped_value = (value.kind_of?(String) ? "'#{value}'" : value.to_s)
+
+        query.match("(n)<-[*..]-(source)").where("source.#{key}! = #{escaped_value}").return("count(source.#{key})").execute
       else
-        # If this key isn't defined upstream
-        nil
+        # Match upstream with key=anything
+        query.match("(n)<-[*..]-(source)").where("has(source.#{key})").return("count(source.#{key})").execute
       end
     end
   end
 
-  def upstream_count(key)
-    if response = query.match("(n)<-[*..]-(source)").where("has(source.#{key})").return("count(source.#{key})").execute
-      if result = response["data"].first
-        result.first
-      else
-        0
+  def upstream_distribution(key)
+    # Get all the unique values of key
+    values = result_or([]) do
+      query.match("(n)<-[*..]-(source)").where("has(source.#{key})").return("collect(source.#{key})").execute
+    end
+
+    # Build a hash with unique values as keys and count occurrances upstream as values
+    result = {}
+    values.each do |value|
+      if count = upstream_count(key, value)
+        result[value] = count
       end
     end
+    result.empty? ? nil : result
+  end
+
+  def upstream_bin_count(key, bins)
+    bins = bins.to_i
+    min, max = upstream_key_range(key)
+
+    result = {}
+    unless min.nil? or max.nil? or min == max
+      range = max - min
+      interval = range.to_f / bins
+      bins.times do |i|
+        lower         = min + (interval * i)
+        upper        = min + (interval * (1+i))
+        range         = "[#{lower},#{upper}#{(i+1 == bins ? "]" : ")")}"
+        result[range] = upstream_range_count(key, lower, upper, (i+1) == bins)
+      end
+    end
+    result.empty? ? nil : result
   end
  
+  def upstream_range_count(key, lower, upper, upper_inclusive=false)
+    # binding.pry
+    result_or(0) do
+      query.match("(n)<-[*..]-(source)").where("(source.#{key}! >= #{lower}) and (source.#{key}! #{upper_inclusive ? '<=' : '<'} #{upper})").return("count(source)").execute
+    end
+  end
+
+  def upstream_key_range(key)
+    min = result_or(nil) do
+      query.match("(n)<-[*..]-(source)").where("has(source.#{key})").return("min(source.#{key})").execute
+    end
+    max = result_or(nil) do
+      query.match("(n)<-[*..]-(source)").where("has(source.#{key})").return("max(source.#{key})").execute
+    end
+    [min.to_f, max.to_f]
+  end
+
   def target_identifiers
     if response = query.match("(n)-->(target)").return("target.identifier").execute
       response["data"].map(&:first)
@@ -98,6 +147,18 @@ class Node
   end
 
   # Private Methods
+
+  def result_or(default)
+    if response = yield
+      if result = response["data"].first
+        result.first
+      else
+        default
+      end
+    else
+      default
+    end
+  end
   
   def query
     QueryBuilder.new(node_id)

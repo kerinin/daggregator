@@ -46,7 +46,46 @@ describe "API v1.0" do
       Node.create(identifier: uuid, data: {'foo' => 3, 'bar' => '4', 'baz' => 'hello'}).flow_to!(@subject)
       Node.create(identifier: uuid, data: {'foo' => 30, 'bar' => '40', 'baz' => 'there'}).flow_to!(@subject)
     end
-     
+      
+    describe "GET /node/:id/bin_count/:keys?bins=n" do
+      before(:each) do
+        get "nodes/#{@subject.identifier}/bin_count/foo+bar+baz?bins=2", format: :json
+      end
+
+      it_behaves_like "a successful JSON response"
+
+      it "returns expected JSON" do
+        json =<<-JSON
+        {
+          "foo": {"[3.0,16.5)": 1, "[16.5,30.0]": 1},
+          "bar": {"[4.0,22.0)": 1, "[22.0,40.0]": 1},
+          "baz": null
+        }
+        JSON
+        response.body.should include_json(json)
+      end
+    end
+
+    describe "GET /node/:id/distribution/:keys" do
+      before(:each) do
+        get "nodes/#{@subject.identifier}/distribution/foo+bar+baz+qux", format: :json
+      end
+
+      it_behaves_like "a successful JSON response"
+
+      it "returns expected JSON" do
+        json =<<-JSON
+        {
+          "foo": {"3": 1, "30": 1},
+          "bar": {"4.0": 1, "40.0": 1},
+          "baz": {"hello": 1, "there": 1},
+          "qux":null
+        }
+        JSON
+        response.body.should include_json(json)
+      end
+    end
+    
     describe "GET /node/:id/sum/:keys" do
       before(:each) do
         get "nodes/#{@subject.identifier}/sum/foo+bar+baz+qux", format: :json
@@ -65,7 +104,6 @@ describe "API v1.0" do
         JSON
         response.body.should include_json(json)
       end
-
     end
 
     describe "GET /node/:id/count/:keys" do

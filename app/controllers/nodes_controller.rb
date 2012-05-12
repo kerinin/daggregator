@@ -21,6 +21,26 @@ class NodesController < ApplicationController
     end
   end
 
+  def distribution
+    @node = Node.find_by_identifier(params[:id])
+
+    @aggregates = DistributionPresenter.new(@node, params[:keys])
+
+    respond_to do |format|
+      format.json { render json: @aggregates.to_json }
+    end
+  end
+
+  def bin_count
+    @node = Node.find_by_identifier(params[:id])
+
+    @aggregates = BinCountPresenter.new(@node, params[:keys], params[:bins])
+
+    respond_to do |format|
+      format.json { render json: @aggregates.to_json }
+    end
+  end
+
   def sum
     @node = Node.find_by_identifier(params[:id])
 

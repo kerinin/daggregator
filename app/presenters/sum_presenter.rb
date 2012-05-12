@@ -11,3 +11,4 @@ class SumPresenter < AggregatePresenter
     {sum: aggregates}.to_json
   end
 end
+

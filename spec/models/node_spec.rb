@@ -133,10 +133,6 @@ describe Node do
     end
   end
 
-  describe "aggregate_keys" do
-    # Integration test against neo4j
-  end
-
   describe "source_node_identifiers" do
     # Integration test against neo4j
   end
@@ -145,15 +141,46 @@ describe Node do
     # Integration test against neo4j
   end
 
+  context "with distribution data graph" do
+    before(:each) do
+      @node = Node.create(uuid)
+      Node.create(identifier: uuid, data: {dist: 9}).flow_to!(@node)
+      Node.create(identifier: uuid, data: {dist: 7}).flow_to!(@node)
+      Node.create(identifier: uuid, data: {dist: 6}).flow_to!(@node)
+      Node.create(identifier: uuid, data: {dist: 5}).flow_to!(@node)
+      Node.create(identifier: uuid, data: {dist: 3}).flow_to!(@node)
+      Node.create(identifier: uuid, data: {dist: 2}).flow_to!(@node)
+      Node.create(identifier: uuid, data: {dist: 0}).flow_to!(@node)
+    end
+
+    describe "upstream_bin_count" do
+      it "returns the correct number of bins" do
+        @node.upstream_bin_count(:dist, 3).keys.count.should == 3
+      end
+
+      it "labels bins using interval notation" do
+        @node.upstream_bin_count(:dist, 3).keys.first.should == '[0.0,3.0)'
+      end
+
+      it "counts nodes in bins" do
+        @node.upstream_bin_count(:dist, 3).should == {'[0.0,3.0)' => 2, '[3.0,6.0)' => 2, '[6.0,9.0]' => 3}
+      end
+
+      it "works with floats" do
+        @node.upstream_bin_count(:dist, 2).should == {'[0.0,4.5)' => 3, '[4.5,9.0]' => 4}
+      end
+    end
+  end
+
   context "with aggregation data graph" do
     before(:each) do
       @h = Node.create(uuid)
-      @g = Node.create(uuid).flow_to!(@h)
-      @f = Node.create(uuid).flow_to!(@h)
-      @e = Node.create(uuid).flow_to!(@f).flow_to!(@g)
+      @g = Node.create(identifier: uuid).flow_to!(@h)
+      @f = Node.create(identifier: uuid).flow_to!(@h)
+      @e = Node.create(identifier: uuid).flow_to!(@f).flow_to!(@g)
       @d = Node.create(identifier: uuid, data: {value: 30}).flow_to!(@e)
-      @c = Node.create(uuid).flow_to!(@e)
-      @b = Node.create(uuid).flow_to!(@c)
+      @c = Node.create(identifier: uuid).flow_to!(@e)
+      @b = Node.create(identifier: uuid).flow_to!(@c)
       @a = Node.create(identifier: uuid, data: {value: 3, other: 100}).flow_to!(@b)
     end
 
@@ -176,6 +203,28 @@ describe Node do
 
       it "returns nil if key undefined" do
         @b.upstream_sum(:missing).should == nil
+      end
+    end
+
+    describe "upstream_distribution" do
+      it "aggregates source nodes" do
+        @b.upstream_distribution(:value).should == {3 => 1}
+      end
+
+      it "aggregates sources of nodes" do
+        @c.upstream_distribution(:value).should == {3 => 1}
+      end
+
+      it "aggregates sources and sources of sources" do
+        @e.upstream_distribution(:value).should == {3 => 1, 30 => 1}
+      end
+
+      it "aggregates diamond shaped sources twice" do
+        @h.upstream_distribution(:value).should == {3 => 2, 30 => 2}
+      end
+
+      it "returns nil if key undefined" do
+        @b.upstream_distribution(:missing).should == nil
       end
     end
 
